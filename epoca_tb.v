@@ -28,7 +28,7 @@ initial begin
     $dumpfile("epoca.vcd");
     $dumpvars(0);
     // in1 0101
-    reset = 1; #15; reset = 0;
+    reset = 1; 
 
     in1_tb[0] = 16'b0;
     in1_tb[1] = 16'b0011110000000000;
@@ -46,9 +46,9 @@ initial begin
     d_tb[2] = 16'b0011110000000000;
     d_tb[3] = 16'b0011110000000000;
 
-
-
     u_tb = 16'b0011100000000000;
+
+    #15; reset = 0;
     
     $display("Resultado esperado: %b %b %b %b", d_tb[0], d_tb[1], d_tb[2], d_tb[3]);
     $display("Resultado obitido: %b %b %b %b", result_tb[0], result_tb[1], result_tb[2], result_tb[3]);
@@ -59,7 +59,7 @@ end
 
 initial begin
     clk = 0;
-    forever #10 clk = ~clk;
+    forever #5 clk = ~clk;
 end
 
 endmodule

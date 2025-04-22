@@ -8,7 +8,7 @@ module teste # (parameter tam = 16)
     input [3:0][tam-1:0] in1, //  0101
     input [3:0][tam-1:0] in2, // 0011
     input [3:0][tam-1:0] d,  // or -> 0111
-    output reg [3:0]result, 
+    output [3:0]result, 
     input [tam-1:0] w0, //inout para treinamento, input só para teste
     input[tam-1:0] w1, // ''
     input [tam-1:0] w2 // ''
@@ -22,6 +22,8 @@ wire [3:0][15:0] sum0, v, mult2, mult3;
 reg y;
 genvar i;
 
+assign en = 1;
+
 generate
     for(i = 0; i < 4; i = i + 1) begin
         multi16 utt0 (.a(in0), .b(w0), .result(mult1), .en(en));
@@ -30,9 +32,11 @@ generate
 
         sum16 utt3 (.a(mult1), .b(mult2[i]), .result(sum0[i]), .en(en));
         sum16 utt4 (.a(sum0[i]), .b(mult3[i]), .result(v[i]), .en(en));
+
+        ativacao atv(.v(v[i]), .result(result[i]), .en(1'b1));
     end
 endgenerate
-
+/* Funciona
 always @ (*) begin
     if(v[0][15] != 1) result[0] = 1;
     else result[0] = 0;
@@ -42,6 +46,28 @@ always @ (*) begin
     else result[2] = 0;
     if(v[3][15] != 1) result[3] = 1;
     else result[3] = 0;
+end
+*/
+endmodule
+
+//testando
+
+module ativacao # (parameter tam = 16)
+(
+	input [tam-1:0] v,
+	output reg result,
+    input en
+	
+);
+
+always @(*) begin  // Make it synchronous
+    if (en) begin
+        if(v[15] != 1) 
+            result <= 1;  // Use non-blocking
+        else 
+            result <= 0;
+        $display("Ativação");
+    end
 end
 
 endmodule

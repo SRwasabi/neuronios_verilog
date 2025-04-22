@@ -3,7 +3,7 @@
 `timescale 1ns/100ps
 `define tam 16
 
-module teste;
+module teste_tb;
 
 reg [3:0][(`tam-1):0] in1_tb;
 reg [3:0][(`tam-1):0] in2_tb;
@@ -46,3 +46,5 @@ initial begin
 end
 
 endmodule
+
+

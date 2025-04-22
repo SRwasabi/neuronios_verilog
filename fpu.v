@@ -72,7 +72,7 @@ always @ (*) begin
             mantissa_sum = mantissa_sum >> 1;
             exponent_result = exponent_result + 1;
         end
-        while(!mantissa_sum[10]) begin
+        while(!mantissa_sum[10] && mantissa_sum != 0) begin
             mantissa_sum = mantissa_sum << 1;
             exponent_result = exponent_result - 1;
         end
@@ -81,7 +81,8 @@ end
 
 //Juta todo o número
 always @ (*) begin
-    result = {sign_result, exponent_result, mantissa_sum[9:0]};
+    if(mantissa_sum == 0 && exponent_a == exponent_b && sign_a != sign_b) result = 0;
+    else result = {sign_result, exponent_result, mantissa_sum[9:0]};
 end
 
 endmodule
