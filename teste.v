@@ -18,7 +18,6 @@ reg [3:0] epoca = 0;
 reg [3:0] erro = 1;
 wire [15:0] mult1;
 wire [3:0][15:0] sum0, v, mult2, mult3;
-//reg [15:0] v; 
 reg y;
 genvar i;
 

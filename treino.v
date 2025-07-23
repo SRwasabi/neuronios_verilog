@@ -6,7 +6,7 @@
 
 
 //epocas
-module epoca # (parameter tam = 16)
+module epoca_2 # (parameter tam = 16)
 (
     //precisa ser 16bits por causa do IEEE764
     input clk, reset,
@@ -28,11 +28,7 @@ wire next_wire;
 wire[15:0] in0 = 16'b0011110000000000;
 
 //Fios de contas
-wire [15:0] mult1;
-wire [3:0][15:0] sum0, v, mult2, mult3;
-wire [15:0] fio_erro;
-
-
+wire [15:0] v; //wire [3:0][15:0] v
 reg [3:0] y;
 genvar i;
 
@@ -40,24 +36,62 @@ genvar i;
 reg direction = 0;
 wire [15:0] y_aux;
 reg [3:0] erro = 0;
+
+reg [3:0] index_atual = 3'b0;
+wire [15:0] in1_atual = in1[index_atual];
+wire [15:0] in2_atual = in2[index_atual];
+wire [15:0] d_atual = d[index_atual];
+wire [15:0] result_atual;
+reg [3:0][15:0] result_reg;
+
 //reg signed [2:0] qtde = 3'd4;
-reg contr_enable = 1;
+reg contr_enable = 0;
 
 //Pesos auxiliares para inout
-wire [15:0] w0_aux = 0, w1_aux = 0, w2_aux = 0;
-reg [15:0] w0_in = 0, w1_in = 0, w2_in = 0;
-reg [15:0] w0_out = 0, w1_out = 0, w2_out = 0;
+wire [15:0] w0_aux, w1_aux, w2_aux;
+reg [15:0] w0_in, w1_in, w2_in;
+reg [15:0] w0_out, w1_out, w2_out;
 
 //Lógica =================================================
 
+//Precisa ser mexido para arrumar o problema de leitura e escrita
 always @(posedge clk) begin
-    //if (reset) qtde = 3'd4;
     if (reset) begin
+        index_atual <= 2'b0;
         state <= entrada;
         next_state <= saida;
+        contr_enable = 0;
     end
-    else
-        state <= next_state;        
+    else begin
+        if(index_atual == 3'b00 && !contr_enable )begin
+                if(!direction) begin
+                    w0_in <= w0;
+                    w1_in <= w1;
+                    w2_in <= w2;
+                    contr_enable <= 1;
+                end
+        end
+        else if(index_atual <= 3'b011) begin
+            state = next_state;
+            result_reg[index_atual] <= result_atual;
+            index_atual <= index_atual + 1;/**/
+            if(direction == 1) begin
+                w0_in <= w0_aux;
+                w1_in <= w1_aux;
+                w2_in <= w2_aux;
+                w0_out <= w0_aux;
+                w1_out <= w1_aux;
+                w2_out <= w2_aux;
+                
+            end
+        end
+        /*else begin
+            w0_out <= w0_aux;
+            w1_out <= w1_aux;
+            w2_out <= w2_aux;
+            state <= saida;
+        end*/
+    end    
 end
 
 
@@ -79,50 +113,43 @@ assign w0 = direction ? w0_out : 16'bz;
 assign w1 = direction ? w1_out : 16'bz;
 assign w2 = direction ? w2_out : 16'bz;
 
+/*
 always @ (posedge clk) begin
 
     if(!direction) begin
         w0_in <= w0;
         w1_in <= w1;
         w2_in <= w2;
-        //next_state <= saida;
-        //direction <= 1;
     end
     else begin
-        w0_in <= w0_out;
-        w1_in <= w1_out;
-        w2_in <= w2_out;
+        w0_in <= w0_aux;
+        w1_in <= w1_aux;
+        w2_in <= w2_aux;
     end
-/*
-    w0_out = w1_aux;
-    w1_out = w1_aux;
-    w2_out = w2_aux;*/
 end
+*/
 
-generate
-    for(i = 0; i < 4; i = i + 1) begin
-        //Calculos
-        calculo_v calc(.in0(in0), .in1(in1[i]), .in2(in2[i]), .w0(w0_in), .w1(w1_in), .w2(w2_in), .v(v[i]), .contr_enable(contr_enable));
+//Calculos
+calculo_v calc(.in0(in0), .in1(in1_atual), .in2(in2_atual), .w0(w0_in), .w1(w1_in), .w2(w2_in), .v(v), .contr_enable(contr_enable));
         
-        //Esta dando problema no ativação, quando eu coloco o clk ele n funfa, e quando coloco ele para
-	    ativacao atv(.v(v[i]), .nextstate(next_wire), .result(result[i]), .clk(clk), .en(contr_enable));
+ativacao atv(.v(v), .nextstate(next_wire), .result(result_atual), .clk(clk), .en(contr_enable));
 
-        //Ajusta os pesos
-        //negativa d para poder subtrair
-        multi16 result_neg (.a(result[i]), .b(16'b1011110000000000), .result(y_aux), .en(contr_enable));
-        //assign y_aux = {~result[i][15], result[i][14:0]};
+//negativa d para poder subtrair
+multi16 result_neg (.a(result_atual), .b(16'b1011110000000000), .result(y_aux), .en(contr_enable));
 
-        att_peso peso_w0(.d(d[i]), .y(y_aux), .in(in0), .u(u), .w_in(w0_in), .w_out(w0_aux), .en(contr_enable));
-        att_peso peso_w1(.d(d[i]), .y(y_aux), .in(in1[i]), .u(u), .w_in(w1_in), .w_out(w1_aux), .en(contr_enable));
-        att_peso peso_w2(.d(d[i]), .y(y_aux), .in(in2[i]), .u(u), .w_in(w2_in), .w_out(w2_aux), .en(contr_enable));
+//Ajusta os pesos
 
-    end
-endgenerate
+att_peso peso_w0(.d(d_atual), .y(y_aux), .in(in0), .u(u), .w_in(w0_in), .w_out(w0_aux), .en(contr_enable));
+att_peso peso_w1(.d(d_atual), .y(y_aux), .in(in1_atual), .u(u), .w_in(w1_in), .w_out(w1_aux), .en(contr_enable));
+att_peso peso_w2(.d(d_atual), .y(y_aux), .in(in2_atual), .u(u), .w_in(w2_in), .w_out(w2_aux), .en(contr_enable));
+
 /*
 always @(next_wire) begin
     next_state <= next_wire;
 end
 */
+assign result = result_reg;
+    
 endmodule
 
 
@@ -140,7 +167,7 @@ module ativacao # (parameter tam = 16)
     input en
 );
 
-always @(posedge clk) begin
+always @(v) begin
     if (en) begin
         if(v[15] != 1) result <= 16'b0011110000000000;
         else result <= 16'b0;

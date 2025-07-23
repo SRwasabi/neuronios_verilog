@@ -1,4 +1,4 @@
-`include "treino.v"
+`include "treino_2.v"
 
 `timescale 1ns/100ps
 `define tam 16
@@ -16,7 +16,7 @@ reg[(`tam-1):0] w0, w1, w2;// pesos entrada
 wire [(`tam-1):0] w0_in, w1_in, w2_in;// pesos entrada
 //wire [(`tam-1):0] w0_out, w1_out, w2_out; // pesos saida
 
-epoca teste_epoca (.in1(in1_tb), .in2(in2_tb), .d(d_tb), .u(u_tb), .result(result_tb), 
+epoca_2 teste_epoca (.in1(in1_tb), .in2(in2_tb), .d(d_tb), .u(u_tb), .result(result_tb), 
 .w0(w0_in), .w1(w1_in), .w2(w2_in),
 .reset(reset), .clk(clk)
 );
@@ -53,10 +53,10 @@ initial begin
     in2_tb[1] = 16'b0;
     in2_tb[2] = 16'b0011110000000000;
     in2_tb[3] = 16'b0011110000000000;
-    // d 0111 (or gate)
+    // d 0111 (and gate)
     d_tb[0] = 16'b0;
-    d_tb[1] = 16'b0011110000000000;
-    d_tb[2] = 16'b0011110000000000;
+    d_tb[1] = 16'b0;
+    d_tb[2] = 16'b0;
     d_tb[3] = 16'b0011110000000000;
 
     u_tb = 16'b0011100000000000;
@@ -67,7 +67,7 @@ initial begin
     $display("Resultado esperado: %b %b %b %b", d_tb[0], d_tb[1], d_tb[2], d_tb[3]);
     $display("Resultado obitido: %b %b %b %b", result_tb[0], result_tb[1], result_tb[2], result_tb[3]);
     $display("Pesos obitido: %b %b %b", w0_in, w1_in, w2_in);
-    #30;
+    #60;
     $finish;
 end
 
