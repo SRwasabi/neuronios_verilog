@@ -35,18 +35,6 @@ generate
         ativacao atv(.v(v[i]), .result(result[i]), .en(1'b1));
     end
 endgenerate
-/* Funciona
-always @ (*) begin
-    if(v[0][15] != 1) result[0] = 1;
-    else result[0] = 0;
-    if(v[1][15] != 1) result[1] = 1;
-    else result[1] = 0;
-    if(v[2][15] != 1) result[2] = 1;
-    else result[2] = 0;
-    if(v[3][15] != 1) result[3] = 1;
-    else result[3] = 0;
-end
-*/
 endmodule
 
 //testando
