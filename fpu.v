@@ -30,16 +30,16 @@ module sum16 # (parameter tam = 16)
     always @ (*) begin
         if(en) begin
             if(exponent_a > exponent_b) begin
-                exponent_diference <= exponent_a - exponent_b;
-                mantissa_a_shifted <= {1'b1, mantissa_a}; //Add 1 a frente da mantissa
-                mantissa_b_shifted <= {1'b1, mantissa_b} >> exponent_diference; //Add 1 e shifta ela
-                exponent_result <= exponent_a;
+                exponent_diference = exponent_a - exponent_b;
+                mantissa_a_shifted = {1'b1, mantissa_a}; //Add 1 a frente da mantissa
+                mantissa_b_shifted = {1'b1, mantissa_b} >> exponent_diference; //Add 1 e shifta ela
+                exponent_result = exponent_a;
             end
             else begin
-                exponent_diference <= exponent_b - exponent_a;
-                mantissa_a_shifted <= {1'b1, mantissa_a} >> exponent_diference; //Add 1 e shifta ela
-                mantissa_b_shifted <= {1'b1, mantissa_b}; //Add 1 a frente da mantissa
-                exponent_result <= exponent_b;
+                exponent_diference = exponent_b - exponent_a;
+                mantissa_a_shifted = {1'b1, mantissa_a} >> exponent_diference; //Add 1 e shifta ela
+                mantissa_b_shifted = {1'b1, mantissa_b}; //Add 1 a frente da mantissa
+                exponent_result = exponent_b;
             end
         end
     end
