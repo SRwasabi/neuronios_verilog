@@ -10,7 +10,7 @@ module xor_float_tb;
     reg [3:0][(`tam-1):0] in1; //  0101
     reg [3:0][(`tam-1):0] in2;// 0011
     reg [3:0][(`tam-1):0] d, dz1, dz2;// or -> 0111
-    wire [3:0]result;
+    wire [3:0][(`tam-1):0] result;
     reg [(`tam-1):0] w01, w11, w21; //inout para treinamento, input só para teste
     reg [(`tam-1):0] w02, w12, w22;// ''
     reg [(`tam-1):0] w0, w1, w2;// ''
@@ -19,14 +19,14 @@ module xor_float_tb;
     reg [3:0][(`tam-1):0] int_in1; //  0101
     reg [3:0][(`tam-1):0] int_in2;// 0011
     reg [3:0][(`tam-1):0] int_d, int_dz1, int_dz2;// or -> 0111
-    wire [3:0] int_result;
+    wire [3:0][(`tam-1):0] int_result;
     reg [(`tam-1):0] int_w01, int_w11, int_w21; //inout para treinamento, input só para teste
     reg [(`tam-1):0] int_w02, int_w12, int_w22;// ''
     reg [(`tam-1):0] int_w0, int_w1, int_w2;// ''
 
-    xor_float #(.tam(`tam)) xor1 (.in1(in1), .in2(in2), .d(d), .dz1(dz1), .dz2(dz2), .result(result), .w01(w01), .w11(w11), .w21(w21), .w02(w02), .w12(w12), .w22(w22), .w0(w0), .w1(w1), .w2(w2));
+    xor_float #(.tam(`tam)) xor1 (.in1(in1), .in2(in2), .result(result), .w01(w01), .w11(w11), .w21(w21), .w02(w02), .w12(w12), .w22(w22), .w0(w0), .w1(w1), .w2(w2));
 
-    xor_fixed #(.tam(`tam)) xor2 (.in1(int_in1), .in2(int_in2), .d(int_d), .dz1(int_dz1), .dz2(int_dz2), .result(int_result), .w01(int_w01), .w11(int_w11), .w21(int_w21), .w02(int_w02), .w12(int_w12), .w22(int_w22), .w0(int_w0), .w1(int_w1), .w2(int_w2));
+    xor_fixed #(.tam(`tam)) xor2 (.in1(int_in1), .in2(int_in2), .result(int_result), .w01(int_w01), .w11(int_w11), .w21(int_w21), .w02(int_w02), .w12(int_w12), .w22(int_w22), .w0(int_w0), .w1(int_w1), .w2(int_w2));
 
     initial begin
         $dumpfile("xor_float.vcd");
