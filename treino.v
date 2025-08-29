@@ -1,12 +1,9 @@
 `include "fpu.v"
 
-
 //==============================================================================
 
-
-
 //epocas
-module epoca_2 # (parameter tam = 16)
+module epoca # (parameter tam = 16)
 (
     //precisa ser 16bits por causa do IEEE764
     input clk, reset,
@@ -15,14 +12,11 @@ module epoca_2 # (parameter tam = 16)
     input [3:0][tam-1:0] d,  // or -> 0111
     input [tam-1:0] u, //  Taxa de Aprendizado
     output [3:0][tam-1:0]result, 
-    inout [tam-1:0] w0, w1, w2// pesos entrada
+    input [tam-1:0] w0, w1, w2,// pesos entrada
+    output reg [tam-1:0] w0_out, w1_out, w2_out// pesos entrada
 );
 
 //Registros e wires =================================================
-//Parametros
-parameter entrada = 1'b0, saida = 1'b1;
-reg state, next_state;
-wire next_wire;
 
 //Bias sempre sendo 1 
 wire[15:0] in0 = 16'b0011110000000000;
@@ -36,133 +30,83 @@ genvar i;
 reg direction = 0;
 wire [15:0] y_aux;
 reg [3:0] erro = 0;
-
 reg [3:0] index_atual = 3'b0;
 wire [15:0] in1_atual = in1[index_atual];
 wire [15:0] in2_atual = in2[index_atual];
 wire [15:0] d_atual = d[index_atual];
 wire [15:0] result_atual;
 reg [3:0][15:0] result_reg;
-
-//reg signed [2:0] qtde = 3'd4;
 reg contr_enable = 0;
 
 //Pesos auxiliares para inout
 wire [15:0] w0_aux, w1_aux, w2_aux;
 reg [15:0] w0_in, w1_in, w2_in;
-reg [15:0] w0_out, w1_out, w2_out;
 
-//Lógica =================================================
-
-//Precisa ser mexido para arrumar o problema de leitura e escrita
-always @(posedge clk) begin
-    if (reset) begin
-        index_atual <= 2'b0;
-        state <= entrada;
-        next_state <= saida;
-        contr_enable = 0;
-    end
-    else begin
-        if(index_atual == 3'b00 && !contr_enable )begin
-                if(!direction) begin
-                    w0_in <= w0;
-                    w1_in <= w1;
-                    w2_in <= w2;
-                    contr_enable <= 1;
-                end
-        end
-        else if(index_atual <= 3'b011) begin
-            state = next_state;
-            result_reg[index_atual] <= result_atual;
-            index_atual <= index_atual + 1;/**/
-            if(direction == 1) begin
-                w0_in <= w0_aux;
-                w1_in <= w1_aux;
-                w2_in <= w2_aux;
-                w0_out <= w0_aux;
-                w1_out <= w1_aux;
-                w2_out <= w2_aux;
-                
-            end
-        end
-        /*else begin
-            w0_out <= w0_aux;
-            w1_out <= w1_aux;
-            w2_out <= w2_aux;
-            state <= saida;
-        end*/
-    end    
-end
-
-
-//Máquina de estado para controlar inout
-always @ (posedge clk) begin
-    case (state)
-        entrada: begin
-            direction <= 0;
-        end
-        saida: begin
-            direction <= 1;
-        end
-    endcase
-end
-
-
-//direction = 1 -> ajuste |||| direction = 0 -> leitura
+/*
+inout
+//direction = 1 -> ajuste | direction = 0 -> leitura
 assign w0 = direction ? w0_out : 16'bz;
 assign w1 = direction ? w1_out : 16'bz;
 assign w2 = direction ? w2_out : 16'bz;
+*/
 
-/*
-always @ (posedge clk) begin
-
-    if(!direction) begin
+//Lógica =================================================
+always @(posedge clk) begin
+    if (reset) begin
+        index_atual <= 3'b0;
+        contr_enable <= 0;
+        result_reg <= 4'b0;
+        direction <= 1'b0;
+    end
+    else if(!direction) begin
         w0_in <= w0;
         w1_in <= w1;
         w2_in <= w2;
+        if(!(index_atual == 3'b011)) begin
+            contr_enable <= 1'b1;
+            direction <= 1'b1;
+        end
     end
     else begin
-        w0_in <= w0_aux;
-        w1_in <= w1_aux;
-        w2_in <= w2_aux;
+        w0_out <= w0_aux;
+        w1_out <= w1_aux;
+        w2_out <= w2_aux;
+        w0_in = w0_aux;
+        w1_in = w1_aux;
+        w2_in = w2_aux;
+        result_reg[index_atual] = result_atual;
+        if(!(index_atual == 3'b011))index_atual <= index_atual + 1;
+        else begin
+            direction <= 1'b0;
+            contr_enable <= 1'b0;
+        end
     end
-end
-*/
+ end
+
 
 //Calculos
 calculo_v calc(.in0(in0), .in1(in1_atual), .in2(in2_atual), .w0(w0_in), .w1(w1_in), .w2(w2_in), .v(v), .contr_enable(contr_enable));
-        
-ativacao atv(.v(v), .nextstate(next_wire), .result(result_atual), .clk(clk), .en(contr_enable));
+ativacao atv(.v(v), .result(result_atual), .en(contr_enable));
+
 
 //negativa d para poder subtrair
 multi16 result_neg (.a(result_atual), .b(16'b1011110000000000), .result(y_aux), .en(contr_enable));
 
-//Ajusta os pesos
 
+//Ajusta os pesos
 att_peso peso_w0(.d(d_atual), .y(y_aux), .in(in0), .u(u), .w_in(w0_in), .w_out(w0_aux), .en(contr_enable));
 att_peso peso_w1(.d(d_atual), .y(y_aux), .in(in1_atual), .u(u), .w_in(w1_in), .w_out(w1_aux), .en(contr_enable));
 att_peso peso_w2(.d(d_atual), .y(y_aux), .in(in2_atual), .u(u), .w_in(w2_in), .w_out(w2_aux), .en(contr_enable));
 
-/*
-always @(next_wire) begin
-    next_state <= next_wire;
-end
-*/
 assign result = result_reg;
-    
+
 endmodule
-
-
 
 //==============================================================================
 
-
-
 module ativacao # (parameter tam = 16)
 (
-    input clk,
 	input [tam-1:0] v,
-	output reg nextstate,
 	output reg [tam-1:0] result,
     input en
 );
@@ -171,22 +115,12 @@ always @(v) begin
     if (en) begin
         if(v[15] != 1) result <= 16'b0011110000000000;
         else result <= 16'b0;
-        nextstate = 1'b0; // 0 ou 1?
         $display("Ativação");
     end
 end
 endmodule
 
-
-
-
-
-
 //==============================================================================
-
-
-
-
 
 module calculo_v # (parameter tam = 16)
 (
@@ -213,13 +147,7 @@ end
 
 endmodule
 
-
-
-
 //==============================================================================
-
-
-
 
 // Atualização de pesos (funcionando)
 module att_peso # (parameter tam = 16)
