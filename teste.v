@@ -4,7 +4,7 @@
 //==============================================================================
 //modulo de teste com ponto flutuante
 
-module teste # (parameter tam = 16)
+module neuro # (parameter tam = 16)
 (
     //precisa ser 16bits por causa do IEEE764
     input [3:0][tam-1:0] in1, //  0101
@@ -35,7 +35,7 @@ endmodule
 
 //==============================================================================
 //modulo de teste com ponto fixo
-module int_teste # (parameter tam = 16)
+module int_neuro # (parameter tam = 16)
 (
     //precisa ser 16bits por causa do IEEE764
     input [3:0][tam-1:0] in1, //  0101

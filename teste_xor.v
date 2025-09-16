@@ -16,9 +16,9 @@ module xor_float # (parameter tam = 16)
 );
     wire [3:0][15:0] in_z1, in_z2;
 
-    teste z1 (.in1(in1), .in2(in2), .result(in_z1), .w0(w01), .w1(w11), .w2(w21));
-    teste z2 (.in1(in1), .in2(in2), .result(in_z2), .w0(w02), .w1(w12), .w2(w22));
-    teste xor_gate (.in1(in_z1), .in2(in_z2), .result(result), .w0(w0), .w1(w1), .w2(w2));
+    neuro z1 (.in1(in1), .in2(in2), .result(in_z1), .w0(w01), .w1(w11), .w2(w21));
+    neuro z2 (.in1(in1), .in2(in2), .result(in_z2), .w0(w02), .w1(w12), .w2(w22));
+    neuro xor_gate (.in1(in_z1), .in2(in_z2), .result(result), .w0(w0), .w1(w1), .w2(w2));
 
 endmodule
 
@@ -38,9 +38,9 @@ module xor_fixed # (parameter tam = 16)
 );
     wire [3:0][15:0] in_z1, in_z2;
 
-    int_teste z1 (.in1(in1), .in2(in2), .result(in_z1), .w0(w01), .w1(w11), .w2(w21));
-    int_teste z2 (.in1(in1), .in2(in2), .result(in_z2), .w0(w02), .w1(w12), .w2(w22));
-    int_teste xor_gate (.in1(in_z1), .in2(in_z2), .result(result), .w0(w0), .w1(w1), .w2(w2));
+    int_neuro z1 (.in1(in1), .in2(in2), .result(in_z1), .w0(w01), .w1(w11), .w2(w21));
+    int_neuro z2 (.in1(in1), .in2(in2), .result(in_z2), .w0(w02), .w1(w12), .w2(w22));
+    int_neuro xor_gate (.in1(in_z1), .in2(in_z2), .result(result), .w0(w0), .w1(w1), .w2(w2));
 
 
 endmodule
