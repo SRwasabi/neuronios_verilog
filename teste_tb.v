@@ -27,8 +27,8 @@ real start_time_fpu, end_time_fpu;
 real start_time_fpx, end_time_fpx;
 
 
-teste teste1 (.in1(in1_tb), .in2(in2_tb), .result(result_tb), .w0(w0_tb), .w1(w1_tb), .w2(w2_tb));
-int_teste int_teste1 (.in1(int_in1_tb), .in2(int_in2_tb), .result(int_result_tb), .w0(int_w0_tb), .w1(int_w1_tb), .w2(int_w2_tb));
+neuro neuro1 (.in1(in1_tb), .in2(in2_tb), .result(result_tb), .w0(w0_tb), .w1(w1_tb), .w2(w2_tb));
+int_neuro int_neuro1 (.in1(int_in1_tb), .in2(int_in2_tb), .result(int_result_tb), .w0(int_w0_tb), .w1(int_w1_tb), .w2(int_w2_tb));
 
 always@(w0_tb or w1_tb or w2_tb) begin
     start_time_fpu = $realtime;
