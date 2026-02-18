@@ -20,6 +20,35 @@ endmodule
 
 //==============================================================================
 
+module relu_ativacao # (parameter tam = 16)
+    (
+        input [tam-1:0] v,
+        output reg[tam-1:0] result
+    );
+
+    always @(v) begin
+        if(v[15] != 1) result = v;
+        else result = 16'b0;
+    end
+
+endmodule
+
+//==============================================================================
+
+module linear_ativacao # (parameter tam = 16)
+    (
+        input [tam-1:0] v,
+        output reg[tam-1:0] result
+    );
+
+    always @(v) begin
+        result = v;
+    end
+
+endmodule
+
+//==============================================================================
+
 module calculo_v # (parameter tam = 16)
 (
     input [tam-1:0] in0, in1, in2,
@@ -68,5 +97,18 @@ module att_peso # (parameter tam = 16)
     always @(w_fio) begin
         if (en) w_out <= w_fio;
     end
+
+endmodule
+
+//==============================================================================
+
+module variable_mux # (parameter tam = 16, parameter in_qnt = 784)
+    (
+        input [in_qnt:0][tam-1:0] in,
+        input [$clog2(in_qnt):0] sel,
+        output [tam-1:0] out
+    );
+
+    assign out = in[sel];
 
 endmodule
