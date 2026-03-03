@@ -1,4 +1,4 @@
-`include "teste.v"
+`include "neuro_4parallel.v"
 
 //==============================================================================
 // XOR em ponto flutuante
