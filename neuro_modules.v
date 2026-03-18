@@ -103,13 +103,3 @@ endmodule
 
 //==============================================================================
 
-module variable_mux # (parameter tam = 16, parameter in_qnt = 784)
-    (
-        input [in_qnt:0][tam-1:0] in,
-        input [$clog2(in_qnt):0] sel,
-        output [tam-1:0] out
-    );
-
-    assign out = in[sel];
-
-endmodule

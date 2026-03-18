@@ -21,7 +21,6 @@ matrix_PE # (.tam(`tam), .layer(`layer)) matrix_1 (.bus_input(data), .bus_weight
 
 always @(posedge clk, posedge rst) begin
     
-
     if(rst) begin 
         PE_en <= {`layer{1'b1}};
         last_selection <= 0;
