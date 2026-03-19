@@ -8,13 +8,13 @@ module Core_NPU #(parameter tam = 16, parameter layer = 100, parameter in_qnt = 
         input clk,
         input rst,
         input [tam-1:0] bus_input,
-        input [layer-1:0][tam-1:0] bus_weights
+        input [layer-1:0][tam-1:0] bus_weights,
+        output [layer-1:0][tam-1:0] acc_out
     );
 
     wire [$clog2(in_qnt):0] count;
-    wire [layer-1:0][tam-1:0] acc_out;
-    wire [1:0] state_wire;
     wire [layer-1:0] PE_en;
+    wire init_wire;
 
     counter # (
             .tam($clog2(in_qnt)+1)
@@ -22,6 +22,7 @@ module Core_NPU #(parameter tam = 16, parameter layer = 100, parameter in_qnt = 
         counter_unit (
             .clk(clk), 
             .rst(rst), 
+            .init(init_wire),
             .count(count)
         );
 
@@ -33,9 +34,8 @@ module Core_NPU #(parameter tam = 16, parameter layer = 100, parameter in_qnt = 
         FSM_unit (
             .clk(clk), 
             .rst(rst), 
-            .state(state_wire), 
+            .count_init(init_wire),
             .count(count), 
-            .next_state(state_wire), 
             .PE_en(PE_en)
         );
 

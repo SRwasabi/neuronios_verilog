@@ -5,7 +5,7 @@
 module FSM_tb;
 reg clk;
 reg rst;
-wire cont_init;
+wire count_init;
 wire [`in_qnt-1:0] count;
 wire [`layer-1:0] PE_en;
 
@@ -15,7 +15,7 @@ counter # (
     counter_unit (
         .clk(clk), 
         .rst(rst), 
-        .init(cont_init),
+        .init(count_init),
         .count(count)
     );
 
@@ -28,7 +28,7 @@ FSM # (
         .clk(clk), 
         .rst(rst), 
         .count(count),
-        .cont_init(cont_init),
+        .count_init(count_init),
         .PE_en(PE_en)
     );
 
