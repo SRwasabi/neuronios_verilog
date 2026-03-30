@@ -12,8 +12,8 @@ module ativacao # (parameter tam = 16)
 
     always @(v) begin
         if (en) begin
-            if(v[15] != 1) result <= 16'b0011110000000000;
-            else result <= 16'b0;
+            if(v[15] != 1) result = 16'b0011110000000000;
+            else result = 16'b0;
             $display("Ativação");
         end
     end

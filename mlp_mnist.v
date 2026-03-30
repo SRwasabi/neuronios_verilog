@@ -3,18 +3,29 @@
 
 //==============================================================================
 
-module Core_NPU #(parameter tam = 16, parameter layer = 100, parameter in_qnt = 784) 
+module Core_NPU #(parameter tam = 16, parameter layer = 100, parameter in_qnt = 784, parameter out_layer = 10) 
     (
         input clk,
         input rst,
         input [tam-1:0] bus_input,
         input [layer-1:0][tam-1:0] bus_weights,
-        output [layer-1:0][tam-1:0] acc_out
+        input [out_layer-1:0][tam-1:0] bus_weights_out,
+        output [$clog2(in_qnt):0] count,
+        output [$clog2(layer):0] hidden_count,
+        output [out_layer-1:0][tam-1:0] npu_out
     );
 
-    wire [$clog2(in_qnt):0] count;
     wire [layer-1:0] PE_en;
+    wire [out_layer-1:0] PE_out_en;
     wire init_wire;
+    wire init_hid_wire;
+
+    wire [tam-1:0] bus_input_out;
+    wire [layer-1:0][tam-1:0] acc_out;
+    wire [out_layer-1:0][tam-1:0] out;
+
+    wire [layer:0][tam-1:0] atv_wire;
+    genvar i, j;
 
     counter # (
             .tam($clog2(in_qnt)+1)
@@ -23,20 +34,36 @@ module Core_NPU #(parameter tam = 16, parameter layer = 100, parameter in_qnt = 
             .clk(clk), 
             .rst(rst), 
             .init(init_wire),
+
             .count(count)
         );
 
+    counter # (
+            .tam($clog2(layer)+1)
+        ) 
+        counter_unit2 (
+            .clk(clk), 
+            .rst(rst), 
+            .init(init_hid_wire), 
+            .count(hidden_count)
+        );
+
     FSM # (
-            .count_param($clog2(in_qnt)+1), 
+            .tam($clog2(in_qnt)+1), 
+            .tamout($clog2(layer)+1),
             .layer(layer), 
-            .in_qnt(in_qnt)
+            .in_qnt(in_qnt),
+            .out_layer(out_layer)
         ) 
         FSM_unit (
             .clk(clk), 
             .rst(rst), 
             .count_init(init_wire),
+            .count_init_hid(init_hid_wire),
             .count(count), 
-            .PE_en(PE_en)
+            .hidden_count(hidden_count),
+            .PE_en(PE_en),
+            .PE_out_en(PE_out_en)
         );
 
     matrix_PE # (
@@ -52,7 +79,52 @@ module Core_NPU #(parameter tam = 16, parameter layer = 100, parameter in_qnt = 
             .acc_out(acc_out)
         );
 
-    
+    generate
+        for ( i = 0; i < layer; i = i + 1) begin: ativacao
+            ativacao # (
+                .tam(tam)
+            ) ativacao_unit (
+                .v(acc_out[i]), 
+                .result(atv_wire[i]), 
+                .en(1'b1)
+            );
+        end
+    endgenerate
+
+    variable_mux # (
+        .tam(tam), 
+        .in_qnt(layer)
+    ) variable_mux_unit (
+        .in(atv_wire), 
+        .sel(hidden_count), 
+        .out(bus_input_out)
+    );
+
+    matrix_PE # (
+            .tam(tam), 
+            .layer(out_layer)
+        ) matrix_unit2 (
+            .bus_input(bus_input_out), 
+            .bus_weights(bus_weights_out), 
+            .clk(clk), 
+            .rst(rst), 
+            .PE_en(PE_out_en), 
+            .acc_out(out)
+        );
+
+    generate
+        for ( j = 0; j < out_layer; j = j + 1) begin: ativacao_out
+            ativacao # (
+                .tam(tam)
+            ) ativacao_unit2 (
+                .v(out[j]), 
+                .result(npu_out[j]), 
+                .en(1'b1)
+            );
+        end
+    endgenerate
+    assign atv_wire[layer] = 16'b0011110000000000;
+
 endmodule
 
 
@@ -127,8 +199,13 @@ module MAC # (parameter tam = 16)
     wire [tam-1:0] wire_sum;
 
     always @ (posedge clk, posedge rst) begin
+        
         if (rst) mac_out <= 0;
-        else mac_out <= wire_sum;
+
+        else if(en) begin
+            mac_out <= wire_sum;
+        end
+
     end
     
     multi16 utt0 (

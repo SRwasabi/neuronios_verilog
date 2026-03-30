@@ -9,6 +9,16 @@ module variable_mux # (parameter tam = 16, parameter in_qnt = 784)
 
 endmodule
 
+module variable_mux_3d # (parameter tam = 16, parameter in_qnt = 784, parameter layer = 100)
+    (
+        input [in_qnt:0][layer-1:0][tam-1:0] in,
+        input [$clog2(in_qnt):0] sel,
+        output [layer-1:0][tam-1:0] out
+    );
+
+    assign out = in[sel];
+endmodule
+
 //==============================================================================
 
 module counter # (parameter tam = 16)
@@ -30,23 +40,27 @@ endmodule
 
 //==============================================================================
 
-module FSM  # (parameter count_param = 16, parameter layer = 100, parameter in_qnt = 784)
+module FSM  # (parameter tam = 16, parameter tamout = 16, parameter layer = 100, parameter in_qnt = 784, parameter out_layer = 10)
     (
         input clk,
         input rst,
-        input [count_param-1:0] count,
+        input [tam-1:0] count,
+        input [tamout-1:0] hidden_count,
         output reg count_init,
-        output reg [layer-1:0] PE_en
+        output reg count_init_hid,
+        output reg [layer-1:0] PE_en,
+        output reg [out_layer-1:0] PE_out_en
     );
 
-    parameter RST = 2'b00;
-    parameter SUM = 2'b01;
-    parameter ADD_BIAS = 2'b10;
+    parameter RST = 3'b000;
+    parameter SUM = 3'b001;
+    parameter ADD_BIAS = 3'b011;
+    parameter OUT_SUM = 3'b010;
+    parameter OUT_BIAS = 3'b110;
 
-    reg [1:0] state;
-    reg [1:0] next_state;
-
-    // Sequencial: atualiza estado
+    reg [2:0] state;
+    reg [2:0] next_state;
+    
     always @(posedge clk, posedge rst) begin
         if (rst) begin
             state <= RST;
@@ -56,21 +70,33 @@ module FSM  # (parameter count_param = 16, parameter layer = 100, parameter in_q
         end
     end
 
-    // Combinacional: próximo estado
     always @(*) begin
         case (state)
+
             RST: begin
                 next_state = SUM;
             end
 
+
             SUM: begin
-                if (count == in_qnt - 1)
+                if (count == in_qnt- 1)
                     next_state = ADD_BIAS;
                 else
                     next_state = SUM;
             end
 
             ADD_BIAS: begin
+                next_state = OUT_SUM;
+            end
+
+            OUT_SUM: begin
+                if (hidden_count == layer-1)
+                    next_state = OUT_BIAS;
+                else
+                    next_state = OUT_SUM;
+            end
+
+            OUT_BIAS: begin
                 next_state = RST;
             end
 
@@ -78,29 +104,47 @@ module FSM  # (parameter count_param = 16, parameter layer = 100, parameter in_q
         endcase
     end
 
-    // Combinacional: saídas
     always @(*) begin
-        // Valores padrão
         count_init = 0;
+        count_init_hid = 0;
         PE_en = 0;
+        PE_out_en = 0;
         
         case (state)
+
             RST: begin
-                // No reset, preparar para próximo ciclo
                 PE_en = {layer{1'b1}};
-                count_init = 1;
+                PE_out_en = 0;
+                count_init = 0;
+                count_init_hid = 0;
             end
-            
+
             SUM: begin
                 PE_en = {layer{1'b1}};
                 count_init = 1;
+                count_init_hid = 0;
+
+            end
+
+            ADD_BIAS: begin
+                PE_en = {layer{1'b1}};
+                PE_out_en = 0;
+                count_init = 0;
+                count_init_hid = 0;
             end
             
-            ADD_BIAS: begin
-                // Bias - desativa tudo
-                PE_en = 0;
+            OUT_SUM: begin
+                PE_out_en = {out_layer{1'b1}};
                 count_init = 0;
+                count_init_hid = 1;
             end
+
+            OUT_BIAS: begin
+                PE_out_en = {out_layer{1'b1}};
+                count_init = 0;
+                count_init_hid = 0;
+            end
+
         endcase
     end
     
