@@ -1,86 +1,3 @@
-module variable_mux # (parameter tam = 16, parameter in_qnt = 784)
-    (
-        input [(in_qnt+1)*tam-1:0] in,
-        input [$clog2(in_qnt):0] sel,
-        output [tam-1:0] out
-    );
-
-    assign out = in[sel * tam +: tam];
-
-endmodule
-
-module variable_mux_3d # (parameter tam = 16, parameter in_qnt = 784, parameter layer = 100)
-    (
-        input [(in_qnt+1)*layer*tam-1:0] in,
-        input [$clog2(in_qnt):0] sel,
-        output [layer*tam-1:0] out
-    );
-
-   assign out = in[sel * (layer * tam) +: (layer * tam)];
-endmodule
-
-//==============================================================================
-
-// fazer um modes para a acontagem
-
-module counter # (parameter weights = 784, parameter layer = 100)
-    (
-        input clk,
-        input init,
-        input rst,
-        input mode,
-        output reg over,
-        output reg over_input,
-        output reg [$clog2(weights):0] count,
-        output reg [$clog2(weights):0] count_input
-    );
-
-    parameter WRITING = 1'b1;
-    parameter READING = 1'b0;
-
-    always @(posedge clk, posedge rst) begin
-        if (rst) begin
-            count <= 0;
-            count_input <= 0;
-            over <= 0;
-        end
-
-
-        else if(!init) begin
-            count <= 0;
-            count_input <= 0;
-            over <= 0;
-            over_input <= 0;
-        end 
-        
-        else if (mode == WRITING) begin
-            over_input <= 0;
-            over <= 0;
-
-            if (count == layer-1) begin
-                count <= 0;
-                over <= 1;
-                count_input <= count_input + 1;
-                if(count_input == weights)begin
-                    over_input <= 1;
-                end 
-            end 
-            else count <= count + 1;
-        end
-
-        else if (mode == READING) begin
-            if(count_input == weights) begin
-                count_input <= 0;
-            end
-            else count_input <= count_input + 1;
-        end
-    end
-
-endmodule
-
-
-
-//==============================================================================
 
 module FSM  # (parameter layer = 100, parameter in_qnt = 784, parameter out_layer = 10)
     (
@@ -99,7 +16,8 @@ module FSM  # (parameter layer = 100, parameter in_qnt = 784, parameter out_laye
         output reg weight_out_wr,
         output reg [layer-1:0] PE_en,
         output reg [out_layer-1:0] PE_out_en,
-        output reg att_out
+        output reg att_out,
+		output [2:0] current_state
     );
 
     parameter RST = 3'b000;
@@ -244,5 +162,7 @@ module FSM  # (parameter layer = 100, parameter in_qnt = 784, parameter out_laye
 
         endcase
     end
+	 
+	 assign current_state = state;
     
 endmodule

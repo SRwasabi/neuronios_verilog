@@ -1,9 +1,12 @@
-`include "neuro_modules.v"
-`include "aux_modules.v"
+`include "../NPU_module/matrix_PE.v"
+`include "../NPU_module/control_modules/counter.v"
+`include "../NPU_module/control_modules/fsm.v"
+`include "../NPU_module/control_modules/mux.v"
+`include "../NPU_module/individual_neurons/activations.v"
 
 //==============================================================================
 
-module Core_NPU #(parameter tam = 16, parameter layer = 100, parameter in_qnt = 784, parameter out_layer = 10) 
+module Core_NPU #(parameter tam = 16, parameter layer = 2, parameter in_qnt = 2, parameter out_layer = 1) 
     (
         input clk,
         input rst,
@@ -19,7 +22,10 @@ module Core_NPU #(parameter tam = 16, parameter layer = 100, parameter in_qnt = 
         
         output [$clog2(in_qnt):0] addr_neuro_weight,
         output [$clog2(layer):0] addr_neuro_weight_out,
+		  
+		  output [layer*tam-1:0] acc_out_debug_bus,
 
+			output [2:0] fsm_state,
         output reg [tam-1:0] npu_out
     );
 
@@ -28,8 +34,10 @@ module Core_NPU #(parameter tam = 16, parameter layer = 100, parameter in_qnt = 
     reg [layer*tam-1:0][0:in_qnt] ram_weights ;
     reg [out_layer*tam-1:0][0:layer] ram_weights_out ; 
     */
-    reg [in_qnt:0][layer*tam-1:0] ram_weights ;
-    reg [layer:0][out_layer*tam-1:0] ram_weights_out ; 
+    reg [in_qnt:0] ram_weights [layer*tam-1:0];
+	 
+	 // reg [layer*tam-1:0] ram_weights [0:in_qnt]; GEMINI FALOU QUE É ASSIM
+    reg [layer:0]ram_weights_out [out_layer*tam-1:0] ; 
 
     reg [layer*tam-1:0] buffer_weights;
     reg [out_layer*tam-1:0] buffer_weights_out;
@@ -176,7 +184,8 @@ module Core_NPU #(parameter tam = 16, parameter layer = 100, parameter in_qnt = 
             .addr_neuro_weight(addr_neuro_weight),
             .addr_neuro_weight_out(addr_neuro_weight_out),
             .over_input(over_input),
-            .over_input_out(over_input_out)
+            .over_input_out(over_input_out),
+				.current_state(fsm_state)
         );
 
     matrix_PE # (
@@ -212,6 +221,8 @@ module Core_NPU #(parameter tam = 16, parameter layer = 100, parameter in_qnt = 
         .sel(input_count_out), 
         .out(bus_input_out)
     );
+	 
+	 // OS PESOS NÃO ESTÃO CHEGANDO
 
     matrix_PE # (
             .tam(tam), 
@@ -240,108 +251,7 @@ module Core_NPU #(parameter tam = 16, parameter layer = 100, parameter in_qnt = 
     assign Relu_out[layer*tam +: tam] = 16'b0011110000000000;
     assign bus_weights_internal = ram_weights[input_count];
     assign bus_weights_out_internal = ram_weights_out[input_count_out];
+	 assign acc_out_debug_bus = bus_weights_internal;
 
+	 
 endmodule
-
-
-//==============================================================================
-
-module matrix_PE # (parameter tam = 16, parameter layer = 100)
-    (
-        input [tam-1:0] bus_input, 
-        input [layer*tam-1:0] bus_weights,
-        input clk,
-        input rst,
-        input [layer-1:0] PE_en,
-        output [layer*tam-1:0] acc_out
-    );
-
-    genvar i;
-    generate
-        for (i=0; i < layer; i = i + 1) begin: PEs
-            PE # (
-                .tam(tam)
-            ) pe_unit (
-                .data_in(bus_input), 
-                .bus_w(bus_weights[i*tam +: tam]), 
-                .clk(clk), 
-                .rst(rst), 
-                .acc_out(acc_out[i*tam +: tam]), 
-                .en(PE_en[i])
-            );
-        end
-    endgenerate
-
-endmodule
-
-//==============================================================================
-
-module PE # (parameter tam = 16)
-    (
-        input [tam-1:0] data_in,
-        input [tam-1:0] bus_w,
-        input clk,
-        input rst,
-        input en,
-        // PIPELINE
-        //output reg [tam-1:0] bus_out,
-        //output reg [tam-1:0] w_out,
-        output [tam-1:0] acc_out
-    );
-
-
-    MAC mac_unit (
-        .data_in(data_in), 
-        .w_in(bus_w), 
-        .clk(clk), 
-        .rst(rst), 
-        .mac_out(acc_out), 
-        .en(en)
-    );
-
-endmodule
-
-//==============================================================================
-
-module MAC # (parameter tam = 16)
-    (
-        input [tam-1:0] data_in,
-        input [tam-1:0] w_in,
-        input clk,
-        input rst,
-        input en,
-        output reg [tam-1:0] mac_out
-    );
-
-    wire [tam-1:0] wire_mult;
-    wire [tam-1:0] wire_sum;
-
-    always @ (posedge clk, posedge rst) begin
-        
-        if (rst) mac_out <= 0;
-
-        else if(en) begin
-            mac_out <= wire_sum;
-        end
-
-    end
-    
-    multi16 utt0 (
-        .a(data_in), 
-        .b(w_in), 
-        .en(en), 
-        .result(wire_mult)
-    );
-        
-    sum16 sum0 (
-        .a(mac_out), 
-        .b(wire_mult), 
-        .result(wire_sum), 
-        .en(en)
-    );
-
-
-
-endmodule
-
-//==============================================================================

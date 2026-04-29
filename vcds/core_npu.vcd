@@ -1,0 +1,1222 @@
+$date
+	Tue Apr 28 23:58:06 2026
+$end
+$version
+	Icarus Verilog
+$end
+$timescale
+	100ps
+$end
+$scope module core_npu_tb $end
+$var wire 48 ! full_data [47:0] $end
+$var wire 16 " in1 [15:0] $end
+$var wire 16 # in2 [15:0] $end
+$var wire 16 $ in3 [15:0] $end
+$var wire 16 % weights_in [15:0] $end
+$var wire 16 & weights_in_out [15:0] $end
+$var wire 16 ' npu_out [15:0] $end
+$var wire 2 ( input_count_out [1:0] $end
+$var wire 2 ) input_count [1:0] $end
+$var wire 16 * data [15:0] $end
+$var wire 2 + addr_neuro_weight_out [1:0] $end
+$var wire 2 , addr_neuro_weight [1:0] $end
+$var parameter 32 - in_qnt $end
+$var parameter 32 . layer $end
+$var parameter 32 / out_layer $end
+$var parameter 32 0 tam $end
+$var reg 1 1 clk $end
+$var reg 1 2 rst $end
+$scope module Test_npu $end
+$var wire 32 3 acc_out_debug_bus [31:0] $end
+$var wire 16 4 bus_weights [15:0] $end
+$var wire 16 5 bus_weights_out [15:0] $end
+$var wire 1 1 clk $end
+$var wire 1 2 rst $end
+$var wire 1 6 weight_wr $end
+$var wire 1 7 weight_out_wr $end
+$var wire 1 8 over_out $end
+$var wire 1 9 over_input_out $end
+$var wire 1 : over_input $end
+$var wire 1 ; over $end
+$var wire 16 < linear_out [15:0] $end
+$var wire 2 = input_count_out [1:0] $end
+$var wire 2 > input_count [1:0] $end
+$var wire 1 ? init_wire $end
+$var wire 1 @ init_hid_wire $end
+$var wire 3 A fsm_state [2:0] $end
+$var wire 16 B bus_weights_out_internal [15:0] $end
+$var wire 32 C bus_weights_internal [31:0] $end
+$var wire 16 D bus_input_out [15:0] $end
+$var wire 16 E bus_input [15:0] $end
+$var wire 1 F att_out $end
+$var wire 2 G addr_neuro_weight_out [1:0] $end
+$var wire 2 H addr_neuro_weight [1:0] $end
+$var wire 16 I acc_out_2 [15:0] $end
+$var wire 32 J acc_out [31:0] $end
+$var wire 48 K Relu_out [47:0] $end
+$var wire 1 L PE_out_en $end
+$var wire 2 M PE_en [1:0] $end
+$var parameter 32 N in_qnt $end
+$var parameter 32 O layer $end
+$var parameter 32 P out_layer $end
+$var parameter 32 Q tam $end
+$var reg 1 R buffer_out_wr $end
+$var reg 32 S buffer_weights [31:0] $end
+$var reg 16 T buffer_weights_out [15:0] $end
+$var reg 1 U buffer_wr $end
+$var reg 16 V npu_out [15:0] $end
+$var integer 32 W idx [31:0] $end
+$var integer 32 X w [31:0] $end
+$scope begin ativacao[0] $end
+$var parameter 2 Y i $end
+$scope module ativacao_unit $end
+$var wire 1 Z en $end
+$var wire 16 [ v [15:0] $end
+$var parameter 32 \ tam $end
+$var reg 16 ] result [15:0] $end
+$upscope $end
+$upscope $end
+$scope begin ativacao[1] $end
+$var parameter 2 ^ i $end
+$scope module ativacao_unit $end
+$var wire 1 _ en $end
+$var wire 16 ` v [15:0] $end
+$var parameter 32 a tam $end
+$var reg 16 b result [15:0] $end
+$upscope $end
+$upscope $end
+$scope begin ativacao_out[0] $end
+$var parameter 2 c j $end
+$scope module ativacao_unit2 $end
+$var wire 1 d en $end
+$var wire 16 e v [15:0] $end
+$var parameter 32 f tam $end
+$var reg 16 g result [15:0] $end
+$upscope $end
+$upscope $end
+$scope module FSM_unit $end
+$var wire 1 1 clk $end
+$var wire 3 h current_state [2:0] $end
+$var wire 1 2 rst $end
+$var wire 1 9 over_input_out $end
+$var wire 1 : over_input $end
+$var wire 2 i input_count_out [1:0] $end
+$var wire 2 j input_count [1:0] $end
+$var wire 2 k addr_neuro_weight_out [1:0] $end
+$var wire 2 l addr_neuro_weight [1:0] $end
+$var parameter 3 m ADD_BIAS $end
+$var parameter 3 n ATT_OUT $end
+$var parameter 3 o DUMP_WEIGHTS $end
+$var parameter 3 p DUMP_WEIGHTS_OUT $end
+$var parameter 3 q OUT_BIAS $end
+$var parameter 3 r OUT_SUM $end
+$var parameter 3 s RST $end
+$var parameter 3 t SUM $end
+$var parameter 32 u in_qnt $end
+$var parameter 32 v layer $end
+$var parameter 32 w out_layer $end
+$var reg 2 x PE_en [1:0] $end
+$var reg 1 L PE_out_en $end
+$var reg 1 F att_out $end
+$var reg 1 ? count_init $end
+$var reg 1 @ count_init_hid $end
+$var reg 3 y next_state [2:0] $end
+$var reg 3 z state [2:0] $end
+$var reg 1 7 weight_out_wr $end
+$var reg 1 6 weight_wr $end
+$upscope $end
+$scope module counter_layer $end
+$var wire 1 1 clk $end
+$var wire 1 ? init $end
+$var wire 1 6 mode $end
+$var wire 1 2 rst $end
+$var parameter 1 { READING $end
+$var parameter 1 | WRITING $end
+$var parameter 32 } layer $end
+$var parameter 32 ~ weights $end
+$var reg 2 !" count [1:0] $end
+$var reg 2 "" count_input [1:0] $end
+$var reg 1 ; over $end
+$var reg 1 : over_input $end
+$upscope $end
+$scope module counter_out_layer $end
+$var wire 1 1 clk $end
+$var wire 1 @ init $end
+$var wire 1 7 mode $end
+$var wire 1 2 rst $end
+$var parameter 1 #" READING $end
+$var parameter 1 $" WRITING $end
+$var parameter 32 %" layer $end
+$var parameter 32 &" weights $end
+$var reg 2 '" count [1:0] $end
+$var reg 2 (" count_input [1:0] $end
+$var reg 1 8 over $end
+$var reg 1 9 over_input $end
+$upscope $end
+$scope module matrix_unit $end
+$var wire 2 )" PE_en [1:0] $end
+$var wire 32 *" bus_weights [31:0] $end
+$var wire 1 1 clk $end
+$var wire 1 2 rst $end
+$var wire 16 +" bus_input [15:0] $end
+$var wire 32 ," acc_out [31:0] $end
+$var parameter 32 -" layer $end
+$var parameter 32 ." tam $end
+$scope begin PEs[0] $end
+$var parameter 2 /" i $end
+$scope module pe_unit $end
+$var wire 16 0" bus_w [15:0] $end
+$var wire 1 1 clk $end
+$var wire 1 1" en $end
+$var wire 1 2 rst $end
+$var wire 16 2" data_in [15:0] $end
+$var wire 16 3" acc_out [15:0] $end
+$var parameter 32 4" tam $end
+$scope module mac_unit $end
+$var wire 1 1 clk $end
+$var wire 1 1" en $end
+$var wire 1 2 rst $end
+$var wire 16 5" w_in [15:0] $end
+$var wire 16 6" wire_sum [15:0] $end
+$var wire 16 7" wire_mult [15:0] $end
+$var wire 16 8" data_in [15:0] $end
+$var parameter 32 9" tam $end
+$var reg 16 :" mac_out [15:0] $end
+$scope module sum0 $end
+$var wire 16 ;" a [15:0] $end
+$var wire 1 1" en $end
+$var wire 1 <" sign_b $end
+$var wire 1 =" sign_a $end
+$var wire 10 >" mantissa_b [9:0] $end
+$var wire 10 ?" mantissa_a [9:0] $end
+$var wire 5 @" exponent_b [4:0] $end
+$var wire 5 A" exponent_a [4:0] $end
+$var wire 16 B" b [15:0] $end
+$var parameter 32 C" tam $end
+$var reg 5 D" exponent_diference [4:0] $end
+$var reg 5 E" exponent_result [4:0] $end
+$var reg 12 F" mantissa_a_shifted [11:0] $end
+$var reg 12 G" mantissa_b_shifted [11:0] $end
+$var reg 12 H" mantissa_sum [11:0] $end
+$var reg 16 I" result [15:0] $end
+$var reg 1 J" sign_result $end
+$upscope $end
+$scope module utt0 $end
+$var wire 16 K" b [15:0] $end
+$var wire 1 1" en $end
+$var wire 11 L" mantissa_b [10:0] $end
+$var wire 11 M" mantissa_a [10:0] $end
+$var wire 16 N" a [15:0] $end
+$var parameter 32 O" tam $end
+$var reg 6 P" exponent [5:0] $end
+$var reg 22 Q" mantissa_result [21:0] $end
+$var reg 16 R" result [15:0] $end
+$var reg 1 S" sign $end
+$upscope $end
+$upscope $end
+$upscope $end
+$upscope $end
+$scope begin PEs[1] $end
+$var parameter 2 T" i $end
+$scope module pe_unit $end
+$var wire 16 U" bus_w [15:0] $end
+$var wire 1 1 clk $end
+$var wire 1 V" en $end
+$var wire 1 2 rst $end
+$var wire 16 W" data_in [15:0] $end
+$var wire 16 X" acc_out [15:0] $end
+$var parameter 32 Y" tam $end
+$scope module mac_unit $end
+$var wire 1 1 clk $end
+$var wire 1 V" en $end
+$var wire 1 2 rst $end
+$var wire 16 Z" w_in [15:0] $end
+$var wire 16 [" wire_sum [15:0] $end
+$var wire 16 \" wire_mult [15:0] $end
+$var wire 16 ]" data_in [15:0] $end
+$var parameter 32 ^" tam $end
+$var reg 16 _" mac_out [15:0] $end
+$scope module sum0 $end
+$var wire 16 `" a [15:0] $end
+$var wire 1 V" en $end
+$var wire 1 a" sign_b $end
+$var wire 1 b" sign_a $end
+$var wire 10 c" mantissa_b [9:0] $end
+$var wire 10 d" mantissa_a [9:0] $end
+$var wire 5 e" exponent_b [4:0] $end
+$var wire 5 f" exponent_a [4:0] $end
+$var wire 16 g" b [15:0] $end
+$var parameter 32 h" tam $end
+$var reg 5 i" exponent_diference [4:0] $end
+$var reg 5 j" exponent_result [4:0] $end
+$var reg 12 k" mantissa_a_shifted [11:0] $end
+$var reg 12 l" mantissa_b_shifted [11:0] $end
+$var reg 12 m" mantissa_sum [11:0] $end
+$var reg 16 n" result [15:0] $end
+$var reg 1 o" sign_result $end
+$upscope $end
+$scope module utt0 $end
+$var wire 16 p" b [15:0] $end
+$var wire 1 V" en $end
+$var wire 11 q" mantissa_b [10:0] $end
+$var wire 11 r" mantissa_a [10:0] $end
+$var wire 16 s" a [15:0] $end
+$var parameter 32 t" tam $end
+$var reg 6 u" exponent [5:0] $end
+$var reg 22 v" mantissa_result [21:0] $end
+$var reg 16 w" result [15:0] $end
+$var reg 1 x" sign $end
+$upscope $end
+$upscope $end
+$upscope $end
+$upscope $end
+$upscope $end
+$scope module matrix_unit2 $end
+$var wire 1 L PE_en $end
+$var wire 16 y" bus_weights [15:0] $end
+$var wire 1 1 clk $end
+$var wire 1 2 rst $end
+$var wire 16 z" bus_input [15:0] $end
+$var wire 16 {" acc_out [15:0] $end
+$var parameter 32 |" layer $end
+$var parameter 32 }" tam $end
+$scope begin PEs[0] $end
+$var parameter 2 ~" i $end
+$scope module pe_unit $end
+$var wire 16 !# bus_w [15:0] $end
+$var wire 1 1 clk $end
+$var wire 1 L en $end
+$var wire 1 2 rst $end
+$var wire 16 "# data_in [15:0] $end
+$var wire 16 ## acc_out [15:0] $end
+$var parameter 32 $# tam $end
+$scope module mac_unit $end
+$var wire 1 1 clk $end
+$var wire 1 L en $end
+$var wire 1 2 rst $end
+$var wire 16 %# w_in [15:0] $end
+$var wire 16 &# wire_sum [15:0] $end
+$var wire 16 '# wire_mult [15:0] $end
+$var wire 16 (# data_in [15:0] $end
+$var parameter 32 )# tam $end
+$var reg 16 *# mac_out [15:0] $end
+$scope module sum0 $end
+$var wire 16 +# a [15:0] $end
+$var wire 1 L en $end
+$var wire 1 ,# sign_b $end
+$var wire 1 -# sign_a $end
+$var wire 10 .# mantissa_b [9:0] $end
+$var wire 10 /# mantissa_a [9:0] $end
+$var wire 5 0# exponent_b [4:0] $end
+$var wire 5 1# exponent_a [4:0] $end
+$var wire 16 2# b [15:0] $end
+$var parameter 32 3# tam $end
+$var reg 5 4# exponent_diference [4:0] $end
+$var reg 5 5# exponent_result [4:0] $end
+$var reg 12 6# mantissa_a_shifted [11:0] $end
+$var reg 12 7# mantissa_b_shifted [11:0] $end
+$var reg 12 8# mantissa_sum [11:0] $end
+$var reg 16 9# result [15:0] $end
+$var reg 1 :# sign_result $end
+$upscope $end
+$scope module utt0 $end
+$var wire 16 ;# b [15:0] $end
+$var wire 1 L en $end
+$var wire 11 <# mantissa_b [10:0] $end
+$var wire 11 =# mantissa_a [10:0] $end
+$var wire 16 ># a [15:0] $end
+$var parameter 32 ?# tam $end
+$var reg 6 @# exponent [5:0] $end
+$var reg 22 A# mantissa_result [21:0] $end
+$var reg 16 B# result [15:0] $end
+$var reg 1 C# sign $end
+$upscope $end
+$upscope $end
+$upscope $end
+$upscope $end
+$upscope $end
+$scope module variable_mux_unit $end
+$var wire 48 D# in [47:0] $end
+$var wire 2 E# sel [1:0] $end
+$var wire 16 F# out [15:0] $end
+$var parameter 32 G# in_qnt $end
+$var parameter 32 H# tam $end
+$upscope $end
+$upscope $end
+$scope module variable_mux_data $end
+$var wire 48 I# in [47:0] $end
+$var wire 2 J# sel [1:0] $end
+$var wire 16 K# out [15:0] $end
+$var parameter 32 L# in_qnt $end
+$var parameter 32 M# tam $end
+$upscope $end
+$upscope $end
+$enddefinitions $end
+$comment Show the parameter values. $end
+$dumpall
+b10000 M#
+b10 L#
+b10000 H#
+b10 G#
+b10000 ?#
+b10000 3#
+b10000 )#
+b10000 $#
+b0 ~"
+b10000 }"
+b1 |"
+b10000 t"
+b10000 h"
+b10000 ^"
+b10000 Y"
+b1 T"
+b10000 O"
+b10000 C"
+b10000 9"
+b10000 4"
+b0 /"
+b10000 ."
+b10 -"
+b10 &"
+b1 %"
+1$"
+0#"
+b10 ~
+b10 }
+1|
+0{
+b1 w
+b10 v
+b10 u
+b11 t
+b0 s
+b101 r
+b110 q
+b10 p
+b1 o
+b111 n
+b100 m
+b10000 f
+b0 c
+b10000 a
+b1 ^
+b10000 \
+b0 Y
+b10000 Q
+b1 P
+b10 O
+b10 N
+b10000 0
+b1 /
+b10 .
+b10 -
+$end
+#0
+$dumpvars
+b11110000000000 K#
+b0 J#
+b1111000000000000000000000000000011110000000000 I#
+b11110000000000 F#
+b0 E#
+b1111000000000000111100000000000011110000000000 D#
+xC#
+bx B#
+bx A#
+bx @#
+b11110000000000 >#
+b10000000000 =#
+b10000000xxx <#
+b0xxx ;#
+x:#
+bx 9#
+bx 8#
+bx 7#
+bx 6#
+bx 5#
+bx 4#
+bx 2#
+b0 1#
+bx 0#
+b0 /#
+bx .#
+0-#
+x,#
+b0 +#
+b0 *#
+b11110000000000 (#
+bx '#
+bx &#
+b0xxx %#
+b0 ##
+b11110000000000 "#
+b0xxx !#
+b0 {"
+b11110000000000 z"
+b0xxx y"
+xx"
+bx w"
+bx v"
+bx u"
+b11110000000000 s"
+b10000000000 r"
+b10000000000 q"
+b0 p"
+xo"
+bx n"
+bx m"
+bx l"
+bx k"
+bx j"
+bx i"
+bx g"
+b0 f"
+bx e"
+b0 d"
+bx c"
+0b"
+xa"
+b0 `"
+b0 _"
+b11110000000000 ]"
+bx \"
+bx ["
+b0 Z"
+b0 X"
+b11110000000000 W"
+0V"
+b0 U"
+xS"
+bx R"
+bx Q"
+bx P"
+b11110000000000 N"
+b10000000000 M"
+b10000000xxx L"
+b0xxx K"
+xJ"
+bx I"
+bx H"
+bx G"
+bx F"
+bx E"
+bx D"
+bx B"
+b0 A"
+bx @"
+b0 ?"
+bx >"
+0="
+x<"
+b0 ;"
+b0 :"
+b11110000000000 8"
+bx 7"
+bx 6"
+b0xxx 5"
+b0 3"
+b11110000000000 2"
+01"
+b0xxx 0"
+b0 ,"
+b11110000000000 +"
+b0xxx *"
+b0 )"
+b0 ("
+b0 '"
+b0 ""
+b0 !"
+b0 z
+b1 y
+b0 x
+b0 l
+b0 k
+b0 j
+b0 i
+b0 h
+b11110000000000 g
+b0 e
+1d
+b11110000000000 b
+b0 `
+1_
+b11110000000000 ]
+b0 [
+1Z
+b0 X
+b0 W
+b0 V
+0U
+bx T
+bx S
+0R
+b0 M
+0L
+b1111000000000000111100000000000011110000000000 K
+b0 J
+b0 I
+b0 H
+b0 G
+0F
+b11110000000000 E
+b11110000000000 D
+b0xxx C
+b0xxx B
+b0 A
+0@
+0?
+b0 >
+b0 =
+b11110000000000 <
+0;
+x:
+x9
+08
+07
+06
+b11100000000000 5
+b11100000000000 4
+b0xxx 3
+12
+01
+b0 ,
+b0 +
+b11110000000000 *
+b0 )
+b0 (
+b0 '
+b11100000000000 &
+b11100000000000 %
+b11110000000000 $
+b0 #
+b11110000000000 "
+b1111000000000000000000000000000011110000000000 !
+$end
+#50
+11
+#100
+01
+#150
+11
+#200
+01
+02
+#250
+16
+1?
+1R
+1U
+b1 A
+b1 h
+b1 z
+09
+0:
+11
+#300
+01
+#350
+b1011100000000000 %
+b1011100000000000 4
+b1 ,
+b1 H
+b1 l
+b1 !"
+bx0011100000000000 S
+11
+#400
+01
+#450
+b0 *
+b0 E
+b0 +"
+b0 2"
+b0 8"
+b0 N"
+b0 W"
+b0 ]"
+b0 s"
+b0 K#
+b1011110000000000 %
+b1011110000000000 4
+b10111000000000000011100000000000 S
+b1 )
+b1 >
+b1 j
+b1 ""
+b1 J#
+1;
+b0 ,
+b0 H
+b0 l
+b0 !"
+11
+#500
+01
+#550
+b11100000000000 %
+b11100000000000 4
+b1 ,
+b1 H
+b1 l
+b1 !"
+0;
+b10111000000000001011110000000000 S
+11
+#600
+01
+#650
+b11110000000000 *
+b11110000000000 E
+b11110000000000 +"
+b11110000000000 2"
+b11110000000000 8"
+b11110000000000 N"
+b11110000000000 W"
+b11110000000000 ]"
+b11110000000000 s"
+b11110000000000 K#
+b1011100000000000 %
+b1011100000000000 4
+b111000000000001011110000000000 S
+b10 )
+b10 >
+b10 j
+b10 ""
+b10 J#
+1;
+b0 ,
+b0 H
+b0 l
+b0 !"
+11
+#700
+01
+#750
+b1 ,
+b1 H
+b1 l
+b1 !"
+0;
+b111000000000001011100000000000 S
+11
+#800
+01
+#850
+b1xxxxxxxxxx r"
+b1xxxxxxxxxx M"
+bx *
+bx E
+bx +"
+bx 2"
+bx 8"
+bx N"
+bx W"
+bx ]"
+bx s"
+bx K#
+bx %
+bx 4
+b10 y
+b10111000000000001011100000000000 S
+0U
+1:
+b11 )
+b11 >
+b11 j
+b11 ""
+b11 J#
+1;
+b0 ,
+b0 H
+b0 l
+b0 !"
+11
+#900
+01
+#950
+1@
+17
+06
+0?
+b1 ,
+b1 H
+b1 l
+b1 !"
+0;
+0:
+b10 A
+b10 h
+b10 z
+1U
+11
+#1000
+01
+#1050
+b10000000000 L"
+b10000000000 r"
+b10000000000 M"
+b0 0"
+b0 5"
+b0 K"
+b0 3
+b0 C
+b0 *"
+b11110000000000 *
+b11110000000000 E
+b11110000000000 +"
+b11110000000000 2"
+b11110000000000 8"
+b11110000000000 N"
+b11110000000000 W"
+b11110000000000 ]"
+b11110000000000 s"
+b11110000000000 K#
+b11100000000000 %
+b11100000000000 4
+b11100000000000 T
+b1 (
+b1 =
+b1 i
+b1 ("
+b1 E#
+18
+b0 )
+b0 >
+b0 j
+b0 ""
+b0 J#
+b0 ,
+b0 H
+b0 l
+b0 !"
+11
+#1100
+01
+#1150
+b1011100000000000 &
+b1011100000000000 5
+b10 (
+b10 =
+b10 i
+b10 ("
+b10 E#
+18
+11
+#1200
+01
+#1250
+b1xxxxxxxxxx =#
+bx D
+bx z"
+bx "#
+bx (#
+bx >#
+bx F#
+bx &
+bx 5
+b11 y
+b1011100000000000 T
+0R
+19
+b11 (
+b11 =
+b11 i
+b11 ("
+b11 E#
+18
+11
+#1300
+01
+#1350
+b10000000000 <#
+b0 >"
+b0 @"
+0<"
+b0 c"
+b0 e"
+0a"
+b10000000000 =#
+b0 6"
+b0 I"
+b0 7"
+b0 B"
+b0 R"
+b0 ["
+b0 n"
+b0 \"
+b0 g"
+b0 w"
+b0 B
+b0 y"
+b0 !#
+b0 %#
+b0 ;#
+11"
+1V"
+b11110000000000 D
+b11110000000000 z"
+b11110000000000 "#
+b11110000000000 (#
+b11110000000000 >#
+b11110000000000 F#
+b11100000000000 &
+b11100000000000 5
+1?
+b11 M
+b11 x
+b11 )"
+07
+0@
+b0 (
+b0 =
+b0 i
+b0 ("
+b0 E#
+18
+09
+b11 A
+b11 h
+b11 z
+1R
+11
+#1400
+01
+#1450
+b0 *
+b0 E
+b0 +"
+b0 2"
+b0 8"
+b0 N"
+b0 W"
+b0 ]"
+b0 s"
+b0 K#
+b1011110000000000 %
+b1011110000000000 4
+08
+b1 )
+b1 >
+b1 j
+b1 ""
+b1 J#
+11
+#1500
+01
+#1550
+b11110000000000 *
+b11110000000000 E
+b11110000000000 +"
+b11110000000000 2"
+b11110000000000 8"
+b11110000000000 N"
+b11110000000000 W"
+b11110000000000 ]"
+b11110000000000 s"
+b11110000000000 K#
+b1011100000000000 %
+b1011100000000000 4
+b100 y
+b10 )
+b10 >
+b10 j
+b10 ""
+b10 J#
+11
+#1600
+01
+#1650
+b11 M
+b11 x
+b11 )"
+0?
+b11100000000000 %
+b11100000000000 4
+b101 y
+b100 A
+b100 h
+b100 z
+b0 )
+b0 >
+b0 j
+b0 ""
+b0 J#
+11
+#1700
+01
+#1750
+b0 .#
+b0 0#
+0,#
+b0 &#
+b0 9#
+b0 '#
+b0 2#
+b0 B#
+01"
+0V"
+1@
+1L
+b0 M
+b0 x
+b0 )"
+b101 A
+b101 h
+b101 z
+11
+#1800
+01
+#1850
+b1 (
+b1 =
+b1 i
+b1 ("
+b1 E#
+11
+#1900
+01
+#1950
+b1011100000000000 &
+b1011100000000000 5
+b110 y
+b10 (
+b10 =
+b10 i
+b10 ("
+b10 E#
+11
+#2000
+01
+#2050
+1L
+0@
+b11100000000000 &
+b11100000000000 5
+b111 y
+0R
+b110 A
+b110 h
+b110 z
+b0 (
+b0 =
+b0 i
+b0 ("
+b0 E#
+11
+#2100
+01
+#2150
+1F
+0L
+b0 y
+b111 A
+b111 h
+b111 z
+1R
+11
+#2200
+01
+#2250
+0F
+b1 y
+b11110000000000 '
+b11110000000000 V
+b0 A
+b0 h
+b0 z
+b1 W
+11
+#2300
+01
+#2350
+16
+1?
+b1 A
+b1 h
+b1 z
+11
+#2400
+01
+#2450
+b1011100000000000 %
+b1011100000000000 4
+b10111000000000000011100000000000 S
+b1 ,
+b1 H
+b1 l
+b1 !"
+11
+#2500
+01
+#2550
+b0 *
+b0 E
+b0 +"
+b0 2"
+b0 8"
+b0 N"
+b0 W"
+b0 ]"
+b0 s"
+b0 K#
+b1011110000000000 %
+b1011110000000000 4
+b1 )
+b1 >
+b1 j
+b1 ""
+b1 J#
+1;
+b0 ,
+b0 H
+b0 l
+b0 !"
+11
+#2600
+01
+#2650
+b11100000000000 %
+b11100000000000 4
+b10111000000000001011110000000000 S
+b1 ,
+b1 H
+b1 l
+b1 !"
+0;
+11
+#2700
+01
+#2750
+b11110000000000 *
+b11110000000000 E
+b11110000000000 +"
+b11110000000000 2"
+b11110000000000 8"
+b11110000000000 N"
+b11110000000000 W"
+b11110000000000 ]"
+b11110000000000 s"
+b11110000000000 K#
+b1011100000000000 %
+b1011100000000000 4
+b10 )
+b10 >
+b10 j
+b10 ""
+b10 J#
+1;
+b0 ,
+b0 H
+b0 l
+b0 !"
+b111000000000001011110000000000 S
+11
+#2800
+01
+#2850
+b111000000000001011100000000000 S
+b1 ,
+b1 H
+b1 l
+b1 !"
+0;
+11
+#2900
+01
+#2950
+b10000000xxx L"
+b1xxxxxxxxxx r"
+b1xxxxxxxxxx M"
+b0xxx 0"
+b0xxx 5"
+b0xxx K"
+b0xxx 3
+b0xxx C
+b0xxx *"
+bx *
+bx E
+bx +"
+bx 2"
+bx 8"
+bx N"
+bx W"
+bx ]"
+bx s"
+bx K#
+bx %
+bx 4
+b10 y
+1:
+b11 )
+b11 >
+b11 j
+b11 ""
+b11 J#
+1;
+b0 ,
+b0 H
+b0 l
+b0 !"
+0U
+b10111000000000001011100000000000 S
+11
+#3000
+01
+#3050
+1@
+17
+06
+0?
+1U
+b10 A
+b10 h
+b10 z
+b1 ,
+b1 H
+b1 l
+b1 !"
+0;
+0:
+11
+#3100
+01
+#3150
+b10000000000 L"
+b10000000000 r"
+b10000000000 M"
+b0 0"
+b0 5"
+b0 K"
+b0 3
+b0 C
+b0 *"
+b11110000000000 *
+b11110000000000 E
+b11110000000000 +"
+b11110000000000 2"
+b11110000000000 8"
+b11110000000000 N"
+b11110000000000 W"
+b11110000000000 ]"
+b11110000000000 s"
+b11110000000000 K#
+b11100000000000 %
+b11100000000000 4
+b0 )
+b0 >
+b0 j
+b0 ""
+b0 J#
+b0 ,
+b0 H
+b0 l
+b0 !"
+b1 (
+b1 =
+b1 i
+b1 ("
+b1 E#
+18
+b11100000000000 T
+11
+#3200
+01

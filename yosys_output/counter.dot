@@ -1,0 +1,25 @@
+digraph "counter" {
+label="counter";
+rankdir="LR";
+remincross=true;
+n3 [ shape=octagon, label="clk", color="black", fontcolor="black"];
+n4 [ shape=octagon, label="count", color="black", fontcolor="black"];
+n5 [ shape=octagon, label="init", color="black", fontcolor="black"];
+n6 [ shape=octagon, label="rst", color="black", fontcolor="black"];
+v0 [ label="1" ];
+c10 [ shape=record, label="{{<p7> A|<p8> B}|$5\n$add|{<p9> Y}}",  ];
+c15 [ shape=record, label="{{<p11> ARST|<p12> CLK|<p13> D}|$15\n$adff|{<p14> Q}}",  ];
+v1 [ label="16'0000000000000000" ];
+c17 [ shape=record, label="{{<p7> A|<p8> B|<p16> S}|$11\n$mux|{<p9> Y}}",  ];
+x2 [ shape=record, style=rounded, label="<s0> 15:0 - 15:0 ", color="black", fontcolor="black" ];
+x2:e -> c17:p8:w [arrowhead=odiamond, arrowtail=odiamond, dir=both, color="black", fontcolor="black", style="setlinewidth(3)", label=""];
+c17:p9:e -> c15:p13:w [color="black", fontcolor="black", style="setlinewidth(3)", label=""];
+c10:p9:e -> x2:s0:w [color="black", fontcolor="black", style="setlinewidth(3)", label=""];
+n3:e -> c15:p12:w [color="black", fontcolor="black", label=""];
+c15:p14:e -> n4:w [color="black", fontcolor="black", style="setlinewidth(3)", label=""];
+n4:e -> c10:p7:w [color="black", fontcolor="black", style="setlinewidth(3)", label=""];
+n5:e -> c17:p16:w [color="black", fontcolor="black", label=""];
+n6:e -> c15:p11:w [color="black", fontcolor="black", label=""];
+v0:e -> c10:p8:w [color="black", fontcolor="black", style="setlinewidth(3)", label=""];
+v1:e -> c17:p7:w [color="black", fontcolor="black", style="setlinewidth(3)", label=""];
+}

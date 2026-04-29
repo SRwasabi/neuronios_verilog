@@ -1,0 +1,29 @@
+digraph "MAC" {
+label="MAC";
+rankdir="LR";
+remincross=true;
+n1 [ shape=octagon, label="clk", color="black", fontcolor="black"];
+n2 [ shape=octagon, label="data_in", color="black", fontcolor="black"];
+n3 [ shape=octagon, label="mac_out", color="black", fontcolor="black"];
+n4 [ shape=octagon, label="rst", color="black", fontcolor="black"];
+n5 [ shape=octagon, label="w_in", color="black", fontcolor="black"];
+n6 [ shape=diamond, label="wire_mult", color="black", fontcolor="black"];
+n7 [ shape=diamond, label="wire_sum", color="black", fontcolor="black"];
+c12 [ shape=record, label="{{<p8> ARST|<p9> CLK|<p10> D}|$1795\n$adff|{<p11> Q}}",  ];
+v0 [ label="1'1" ];
+c17 [ shape=record, label="{{<p13> a|<p14> b|<p15> en}|sum0\nsum16|{<p16> result}}",  ];
+v1 [ label="1'1" ];
+c18 [ shape=record, label="{{<p13> a|<p14> b|<p15> en}|utt0\nmulti16|{<p16> result}}",  ];
+n1:e -> c12:p9:w [color="black", fontcolor="black", label=""];
+n2:e -> c18:p13:w [color="black", fontcolor="black", style="setlinewidth(3)", label=""];
+c12:p11:e -> n3:w [color="black", fontcolor="black", style="setlinewidth(3)", label=""];
+n3:e -> c17:p13:w [color="black", fontcolor="black", style="setlinewidth(3)", label=""];
+n4:e -> c12:p8:w [color="black", fontcolor="black", label=""];
+n5:e -> c18:p14:w [color="black", fontcolor="black", style="setlinewidth(3)", label=""];
+c18:p16:e -> n6:w [color="black", fontcolor="black", style="setlinewidth(3)", label=""];
+n6:e -> c17:p14:w [color="black", fontcolor="black", style="setlinewidth(3)", label=""];
+c17:p16:e -> n7:w [color="black", fontcolor="black", style="setlinewidth(3)", label=""];
+n7:e -> c12:p10:w [color="black", fontcolor="black", style="setlinewidth(3)", label=""];
+v0:e -> c17:p15:w [color="black", fontcolor="black", label=""];
+v1:e -> c18:p15:w [color="black", fontcolor="black", label=""];
+}
