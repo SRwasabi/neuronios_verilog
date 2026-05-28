@@ -3,6 +3,7 @@
 `include "../NPU_module/control_modules/fsm.v"
 `include "../NPU_module/control_modules/mux.v"
 `include "../NPU_module/individual_neurons/activations.v"
+`include "../NPU_module/control_modules/memory.v"
 
 //==============================================================================
 
@@ -14,124 +15,142 @@ module Core_NPU #(parameter tam = 16, parameter layer = 2, parameter in_qnt = 2,
         input [tam-1:0] bus_input,
         input [tam-1:0] bus_weights,
         input [tam-1:0] bus_weights_out,
-        //input [layer*tam-1:0] bus_weights,
-        //input [out_layer*tam-1:0] bus_weights_out,
         
         output [$clog2(in_qnt):0] input_count,
         output [$clog2(layer):0] input_count_out,
         
-        output [$clog2(in_qnt):0] addr_neuro_weight,
-        output [$clog2(layer):0] addr_neuro_weight_out,
-		  
-		  output [layer*tam-1:0] acc_out_debug_bus,
+        output [$clog2(in_qnt):0] weight_count,
+        output [$clog2(layer):0] weight_count_out,
 
-			output [2:0] fsm_state,
+        output relu_en,
+
         output reg [tam-1:0] npu_out
     );
 
-    // Register for weights
-    /*
-    reg [layer*tam-1:0][0:in_qnt] ram_weights ;
-    reg [out_layer*tam-1:0][0:layer] ram_weights_out ; 
-    */
-    reg [in_qnt:0] ram_weights [layer*tam-1:0];
-	 
-	 // reg [layer*tam-1:0] ram_weights [0:in_qnt]; GEMINI FALOU QUE É ASSIM
-    reg [layer:0]ram_weights_out [out_layer*tam-1:0] ; 
-
+    // Mem Controls
     reg [layer*tam-1:0] buffer_weights;
     reg [out_layer*tam-1:0] buffer_weights_out;
-
+    reg [$clog2(in_qnt):0] addr_wei;
+    reg [$clog2(layer):0] addr_wei_out;
+    reg ram_wr;
+    reg ram_wr_out;
 
     //FSM wires
     wire [layer-1:0] PE_en;
     wire [out_layer-1:0] PE_out_en;
     wire init_wire;
-    wire init_hid_wire;
+    wire init_out_wire;
     wire weight_wr;
     wire weight_out_wr;
-    wire weight_rd;
-    wire weight_out_rd;
-    reg buffer_wr;
-    reg buffer_out_wr;
     wire over;
     wire over_out;
     wire over_input;
     wire over_input_out;
     wire att_out;
 
+    reg buffer_wr;
+    reg buffer_out_wr;
+
     // Internal outputs
     wire [layer*tam-1:0] acc_out;
     wire [out_layer*tam-1:0] acc_out_2;
-    wire [(layer+1)*tam-1:0] Relu_out;
+    wire [(layer+1)*tam-1:0] relu_out;
+    reg  [tam-1:0] relu_buffer [layer:0];
     wire [out_layer*tam-1:0] linear_out;
 
     //Mux wires
-    wire [tam-1:0] bus_input_out;
+    reg [tam-1:0] bus_input_out;
     wire [layer*tam-1:0] bus_weights_internal;
     wire [out_layer*tam-1:0] bus_weights_out_internal;
+
+    //En for Activations
+    //wire relu_en;
+    wire linear_en;
 
     genvar i, j, k;
     integer idx, w;
 
     always @(posedge clk, posedge rst) begin
-        if(rst) begin
-            buffer_wr <= 0;
-        end
-        else if (input_count == in_qnt && addr_neuro_weight == layer-1) buffer_wr <= 0;
+        if(rst) buffer_wr <= 0;
+        else if (input_count == in_qnt && weight_count == layer-1) buffer_wr <= 0;
         else buffer_wr <= 1;
     end
 
     always @(posedge clk, posedge rst) begin
-        if(rst) begin
-            buffer_out_wr <= 0;
-        end
-        else if (input_count_out == layer && addr_neuro_weight_out == out_layer-1) buffer_out_wr <= 0;
+        if(rst) buffer_out_wr <= 0;
+        else if (input_count_out == layer && weight_count_out == out_layer-1) buffer_out_wr <= 0;
         else buffer_out_wr <= 1;
     end
 
     // Write weights in RAM
     always @(posedge clk, posedge rst) begin
+
+        ram_wr <= 0;
+        ram_wr_out <= 0;
+
         if(rst) begin
             idx <= 0;
             w <= 0;
-
-
-            /*
-            for (w = 0; w < in_qnt; w = w + 1) begin
-                ram_weights[w] <= 0;
-                buffer_weights <= 0;
-            end
-            for (w = 0; w < layer; w = w + 1) begin
-                ram_weights_out[w] <= 0;
-                buffer_weights_out <= 0;
-            end
-
-            ram_weights <= 0;
-            ram_weights_out <= 0;
-            buffer_weights <= 0;
-            buffer_weights_out <= 0;
-            */
         end
         else if(weight_wr) begin
-            if(buffer_wr) buffer_weights[addr_neuro_weight*tam +: tam] <= bus_weights;
-            if(over) ram_weights[input_count-1] <= buffer_weights;
+            if(buffer_wr) begin
+                buffer_weights[weight_count*tam +: tam] <= bus_weights;
+            end
+            ram_wr <= (weight_count == layer-1) ? 1 : 0;
+
         end
         else if(weight_out_wr) begin
-            if(buffer_out_wr) buffer_weights_out[addr_neuro_weight_out*tam +: tam] <= bus_weights_out;
-            if(over_out) ram_weights_out[input_count_out-1] <= buffer_weights_out;
+            if(buffer_out_wr) begin
+                buffer_weights_out[weight_count_out*tam +: tam] <= bus_weights_out;
+            end
+            ram_wr_out <= (weight_count_out == out_layer-1) ? 1 : 0;
         end
+
+        addr_wei <= input_count;
+        addr_wei_out <= input_count_out;
+    end
+
+    always @(posedge clk) begin
+        for (idx = 0; idx < layer+1; idx = idx + 1) begin
+            relu_buffer[idx] <= relu_out[idx*tam +: tam];
+        end
+        bus_input_out <= relu_buffer[addr_wei_out];
     end
 
     // Mux for output
     always @(posedge clk, posedge rst) begin
         if(rst) npu_out <= 0;
         else if(att_out) begin
-            for (idx = 0; idx < out_layer; idx = idx + 1) begin
+            npu_out <= linear_out[0 +: tam];
+            for (idx = 1; idx < out_layer; idx = idx + 1) begin
                 if(linear_out[idx*tam +: tam] > npu_out) npu_out <= linear_out[idx*tam +: tam];
             end
         end
     end
+
+    RAM # (
+        .tam(tam), 
+        .layer(layer), 
+        .in_qnt(in_qnt)
+    ) RAM_weights (
+        .clk(clk), 
+        .wr(ram_wr), 
+        .data_in(buffer_weights), 
+        .addr(addr_wei), 
+        .data_out(bus_weights_internal)
+    );
+
+    RAM # (
+        .tam(tam), 
+        .layer(out_layer), 
+        .in_qnt(layer)
+    ) RAM_weights_out (
+        .clk(clk), 
+        .wr(ram_wr_out), 
+        .data_in(buffer_weights_out), 
+        .addr(addr_wei_out), 
+        .data_out(bus_weights_out_internal)
+    );
 
     // Instatiation of modules
     counter # (
@@ -143,10 +162,10 @@ module Core_NPU #(parameter tam = 16, parameter layer = 2, parameter in_qnt = 2,
             .rst(rst), 
             .init(init_wire),
             .mode(weight_wr),
-            .count(addr_neuro_weight),
-            .count_input(input_count),
+            .count(weight_count),
+            .second_count(input_count),
             .over(over),
-            .over_input(over_input)
+            .over_second(over_input)
         );
 
     counter # (
@@ -156,12 +175,12 @@ module Core_NPU #(parameter tam = 16, parameter layer = 2, parameter in_qnt = 2,
         counter_out_layer (
             .clk(clk), 
             .rst(rst), 
-            .init(init_hid_wire), 
+            .init(init_out_wire), 
             .mode(weight_out_wr),
-            .count(addr_neuro_weight_out),
-            .count_input(input_count_out),
+            .count(weight_count_out),
+            .second_count(input_count_out),
             .over(over_out),
-            .over_input(over_input_out)
+            .over_second(over_input_out)
         );
 
     FSM # (
@@ -173,19 +192,18 @@ module Core_NPU #(parameter tam = 16, parameter layer = 2, parameter in_qnt = 2,
             .clk(clk), 
             .rst(rst), 
             .count_init(init_wire),
-            .count_init_hid(init_hid_wire),
-            .input_count(input_count),
-            .input_count_out(input_count_out),
+            .count_init_out(init_out_wire),
+            .addr_wei(addr_wei),
+            .addr_wei_out(addr_wei_out),
             .PE_en(PE_en),
             .PE_out_en(PE_out_en),
             .weight_wr(weight_wr),
             .weight_out_wr(weight_out_wr),
             .att_out(att_out),
-            .addr_neuro_weight(addr_neuro_weight),
-            .addr_neuro_weight_out(addr_neuro_weight_out),
             .over_input(over_input),
             .over_input_out(over_input_out),
-				.current_state(fsm_state)
+            .atv_en(relu_en),
+            .atv_out_en(linear_en)
         );
 
     matrix_PE # (
@@ -207,23 +225,13 @@ module Core_NPU #(parameter tam = 16, parameter layer = 2, parameter in_qnt = 2,
                 .tam(tam)
             ) ativacao_unit (
                 .v(acc_out[i*tam +: tam]), 
-                .result( Relu_out[i*tam +: tam]), 
-                .en(1'b1)
+                .result(relu_out[i*tam +: tam]), 
+                .en(relu_en),
+                .clk(clk)
             );
         end
     endgenerate
-
-    variable_mux # (
-        .tam(tam), 
-        .in_qnt(layer)
-    ) variable_mux_unit (
-        .in( Relu_out), 
-        .sel(input_count_out), 
-        .out(bus_input_out)
-    );
-	 
-	 // OS PESOS NÃO ESTÃO CHEGANDO
-
+	
     matrix_PE # (
             .tam(tam), 
             .layer(out_layer)
@@ -241,17 +249,14 @@ module Core_NPU #(parameter tam = 16, parameter layer = 2, parameter in_qnt = 2,
             ativacao # (
                 .tam(tam)
             ) ativacao_unit2 (
+                .clk(clk),
                 .v(acc_out_2[j*tam +: tam]), 
                 .result(linear_out[j*tam +: tam]), 
-                .en(1'b1)
+                .en(linear_en)
             );
         end
     endgenerate
 
-    assign Relu_out[layer*tam +: tam] = 16'b0011110000000000;
-    assign bus_weights_internal = ram_weights[input_count];
-    assign bus_weights_out_internal = ram_weights_out[input_count_out];
-	 assign acc_out_debug_bus = bus_weights_internal;
-
-	 
+    assign relu_out[layer*tam +: tam] = 16'b0011110000000000;
+	
 endmodule

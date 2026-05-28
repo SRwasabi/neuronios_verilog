@@ -5,33 +5,41 @@ module FSM  # (parameter layer = 100, parameter in_qnt = 784, parameter out_laye
         input rst,
         input over_input,
         input over_input_out,
-        input [$clog2(in_qnt):0] input_count,
-        input [$clog2(layer):0] input_count_out,
-        input [$clog2(in_qnt):0] addr_neuro_weight,
-        input [$clog2(layer):0] addr_neuro_weight_out,
+        input [$clog2(in_qnt):0] addr_wei,
+        input [$clog2(layer):0] addr_wei_out,
 
         output reg count_init,
-        output reg count_init_hid,
+        output reg count_init_out,
         output reg weight_wr,
         output reg weight_out_wr,
         output reg [layer-1:0] PE_en,
         output reg [out_layer-1:0] PE_out_en,
-        output reg att_out,
-		output [2:0] current_state
+        output reg atv_en,
+        output reg atv_out_en,
+        output reg att_out
     );
 
-    parameter RST = 3'b000;
-    parameter DUMP_WEIGHTS = 3'b001;
-    parameter DUMP_WEIGHTS_OUT = 3'b010;
-    parameter SUM = 3'b011;
-    parameter ADD_BIAS = 3'b100;
-    parameter OUT_SUM = 3'b101;
-    parameter OUT_BIAS = 3'b110;
-    parameter ATT_OUT = 3'b111;
+    parameter RST = 4'b0000;
+    parameter DUMP_WEIGHTS = 4'b0001;
+    parameter DUMP_WEIGHTS_OUT = 4'b0010;
+
+    parameter SUM = 4'b0011;
+    parameter SUM_delay1 = 4'b0100;
+    parameter SUM_delay2 = 4'b0101;
+    parameter BIAS = 4'b0110;
+
+    parameter ATV = 4'b0111;
+
+    parameter OUT_SUM = 4'b1000;
+    parameter OUT_delay1 = 4'b1001;
+    parameter OUT_delay2 = 4'b1010;
+    parameter OUT_BIAS = 4'b1011;
+
+    parameter ATT_OUT = 4'b1100;
 
 
-    reg [2:0] state ;
-    reg [2:0] next_state;
+    reg [3:0] state ;
+    reg [3:0] next_state;
     
     always @(posedge clk, posedge rst) begin
         if (rst) begin
@@ -65,21 +73,41 @@ module FSM  # (parameter layer = 100, parameter in_qnt = 784, parameter out_laye
 
 
             SUM: begin
-                if (input_count == in_qnt)
-                    next_state = ADD_BIAS;
-                else
-                    next_state = SUM;
+                next_state = SUM_delay1;
             end
 
-            ADD_BIAS: begin
+            SUM_delay1: begin
+                next_state = SUM_delay2;
+            end
+
+            SUM_delay2: begin
+                if (addr_wei == in_qnt)
+                    next_state = BIAS;
+                else
+                    next_state = SUM_delay2;
+            end
+
+            BIAS: begin
+                next_state = ATV;
+            end
+
+            ATV: begin
                 next_state = OUT_SUM;
             end
 
             OUT_SUM: begin
-                if (input_count_out == layer)
+                next_state = OUT_delay1;
+            end
+
+            OUT_delay1: begin
+                next_state = OUT_delay2;
+            end
+
+            OUT_delay2: begin
+                if (addr_wei_out == layer)
                     next_state = OUT_BIAS;
                 else
-                    next_state = OUT_SUM;
+                    next_state = OUT_delay2;
             end
 
             OUT_BIAS: begin
@@ -87,7 +115,7 @@ module FSM  # (parameter layer = 100, parameter in_qnt = 784, parameter out_laye
             end
 
             ATT_OUT: begin
-                next_state = RST;
+                next_state = SUM;
             end
 
             default: next_state = RST;
@@ -96,73 +124,86 @@ module FSM  # (parameter layer = 100, parameter in_qnt = 784, parameter out_laye
 
     always @(*) begin
         count_init = 0;
-        count_init_hid = 0;
+        count_init_out = 0;
         PE_en = 0;
         PE_out_en = 0;
         weight_wr = 0;
         weight_out_wr = 0;
         att_out = 0;
-        
+        atv_en = 0;
+        atv_out_en = 0;
+
         case (state)
 
             RST: begin
+                count_init = 0;
+                count_init_out = 0;
                 PE_en = 0;
                 PE_out_en = 0;
-                count_init = 0;
-                count_init_hid = 0;
+                weight_wr = 0;
+                weight_out_wr = 0;
+                att_out = 0;
+                atv_en = 0;
+                atv_out_en = 0;
             end
 
             DUMP_WEIGHTS: begin
-                PE_en = 0;
-                PE_out_en = 0;
+
                 count_init = 1;
                 weight_wr = 1;
-                weight_out_wr = 0;
-                count_init_hid = 0;
             end
 
             DUMP_WEIGHTS_OUT: begin
-                PE_en = 0;
-                PE_out_en = 0;
-                count_init = 0;
-                weight_wr = 0;
                 weight_out_wr = 1;
-                count_init_hid = 1;
+                count_init_out = 1;
             end
 
             SUM: begin
-                PE_en = {layer{1'b1}};
                 count_init = 1;
-                count_init_hid = 0;
 
             end
 
-            ADD_BIAS: begin
+            SUM_delay1: begin
+                count_init = 1;
+            end
+
+            SUM_delay2: begin
                 PE_en = {layer{1'b1}};
-                PE_out_en = 0;
-                count_init = 0;
-                count_init_hid = 0;
+            end
+
+            BIAS: begin
+                PE_en = {layer{1'b1}};
             end
             
+            ATV: begin
+                atv_en = 1;
+            end
+
             OUT_SUM: begin
+                count_init_out = 1;
+            end
+
+            OUT_delay1: begin
+                count_init_out = 1;
+            end
+
+            OUT_delay2: begin
                 PE_out_en = {out_layer{1'b1}};
-                count_init = 0;
-                count_init_hid = 1;
+                count_init_out = 1;
             end
 
             OUT_BIAS: begin
                 PE_out_en = {out_layer{1'b1}};
-                count_init = 0;
-                count_init_hid = 0;
             end
 
             ATT_OUT: begin
+                atv_out_en = 1;
                 att_out = 1;
             end
 
         endcase
     end
-	 
-	 assign current_state = state;
+
+    assign current_state = state;
     
 endmodule

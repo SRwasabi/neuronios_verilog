@@ -20,8 +20,8 @@ module MAC # (parameter tam = 16)
         else if(en) begin
             mac_out <= wire_sum;
         end
-		  
-		  else mac_out <= 0;
+		
+		else mac_out <= 0;
     end
     
     multi16 utt0 (
