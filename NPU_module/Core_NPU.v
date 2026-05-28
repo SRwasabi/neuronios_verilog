@@ -83,7 +83,7 @@ module Core_NPU #(parameter tam = 16, parameter layer = 2, parameter in_qnt = 2,
     end
 
     // Write weights in RAM
-    always @(posedge clk, posedge rst) begin
+    always @(posedge clk, posedge rst, posedge weight_wr, posedge weight_out_wr) begin
 
         ram_wr <= 0;
         ram_wr_out <= 0;
