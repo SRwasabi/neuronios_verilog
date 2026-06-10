@@ -35,7 +35,8 @@ module FSM  # (parameter layer = 100, parameter in_qnt = 784, parameter out_laye
     parameter OUT_delay2 = 4'b1010;
     parameter OUT_BIAS = 4'b1011;
 
-    parameter ATT_OUT = 4'b1100;
+    parameter FINAL_RESULT = 4'b1100;
+	parameter ATT_OUT = 4'b1101;
 
 
     reg [3:0] state ;
@@ -111,11 +112,15 @@ module FSM  # (parameter layer = 100, parameter in_qnt = 784, parameter out_laye
             end
 
             OUT_BIAS: begin
-                next_state = ATT_OUT;
+                next_state = FINAL_RESULT;
             end
 
+            FINAL_RESULT: begin
+                next_state = ATT_OUT;
+            end
+				
             ATT_OUT: begin
-                next_state = SUM;
+				next_state = SUM;
             end
 
             default: next_state = RST;
@@ -195,9 +200,12 @@ module FSM  # (parameter layer = 100, parameter in_qnt = 784, parameter out_laye
             OUT_BIAS: begin
                 PE_out_en = {out_layer{1'b1}};
             end
-
+				
+            FINAL_RESULT: begin
+				atv_out_en = 1;
+            end 
+					
             ATT_OUT: begin
-                atv_out_en = 1;
                 att_out = 1;
             end
 
