@@ -5,6 +5,7 @@
 `include "../NPU_module/individual_neurons/activations.v"
 `include "../NPU_module/control_modules/memory.v"
 
+
 //==============================================================================
 
 module Core_NPU #(parameter tam = 16, parameter layer = 2, parameter in_qnt = 2, parameter out_layer = 1) 
@@ -24,7 +25,10 @@ module Core_NPU #(parameter tam = 16, parameter layer = 2, parameter in_qnt = 2,
 
         output relu_en,
 
-        output reg [tam-1:0] npu_out
+        output reg [tam-1:0] npu_out,
+		
+		output [3:0] current_state
+
     );
 
     // Mem Controls
@@ -83,32 +87,26 @@ module Core_NPU #(parameter tam = 16, parameter layer = 2, parameter in_qnt = 2,
     end
 
     // Write weights in RAM
-    always @(posedge clk, posedge rst, posedge weight_wr, posedge weight_out_wr) begin
-
-        ram_wr <= 0;
-        ram_wr_out <= 0;
-
-        if(rst) begin
-            idx <= 0;
-            w <= 0;
-        end
-        else if(weight_wr) begin
+    always @(posedge clk) begin
+		ram_wr <= 0;
+        if(weight_wr) begin
             if(buffer_wr) begin
-                buffer_weights[weight_count*tam +: tam] <= bus_weights;
+				buffer_weights[weight_count*tam +: tam] <= bus_weights;
             end
             ram_wr <= (weight_count == layer-1) ? 1 : 0;
-
         end
-        else if(weight_out_wr) begin
-            if(buffer_out_wr) begin
-                buffer_weights_out[weight_count_out*tam +: tam] <= bus_weights_out;
-            end
-            ram_wr_out <= (weight_count_out == out_layer-1) ? 1 : 0;
-        end
-
-        addr_wei <= input_count;
-        addr_wei_out <= input_count_out;
     end
+
+
+	always @(posedge clk) begin
+        ram_wr_out <= 0;
+		if(weight_out_wr) begin
+			if(buffer_out_wr) begin
+				buffer_weights_out[weight_count_out*tam +: tam] <= bus_weights_out;
+			end
+			ram_wr_out <= (weight_count_out == out_layer-1) ? 1 : 0;
+		end
+	end
 
     always @(posedge clk) begin
         for (idx = 0; idx < layer+1; idx = idx + 1) begin
@@ -116,6 +114,11 @@ module Core_NPU #(parameter tam = 16, parameter layer = 2, parameter in_qnt = 2,
         end
         bus_input_out <= relu_buffer[addr_wei_out];
     end
+	
+	always @(posedge clk) begin 
+		addr_wei <= input_count;
+        addr_wei_out <= input_count_out;
+	end
 
     // Mux for output
     always @(posedge clk, posedge rst) begin
@@ -203,7 +206,8 @@ module Core_NPU #(parameter tam = 16, parameter layer = 2, parameter in_qnt = 2,
             .over_input(over_input),
             .over_input_out(over_input_out),
             .atv_en(relu_en),
-            .atv_out_en(linear_en)
+            .atv_out_en(linear_en),
+				.current_state(current_state)
         );
 
     matrix_PE # (
@@ -258,5 +262,5 @@ module Core_NPU #(parameter tam = 16, parameter layer = 2, parameter in_qnt = 2,
     endgenerate
 
     assign relu_out[layer*tam +: tam] = 16'b0011110000000000;
-	
+
 endmodule
