@@ -1,4 +1,5 @@
-`include "../NPU_module/arithmetic_modules/fpu.v"
+`include "../NPU_module/arithmetic_modules/fpu/multi16.v"
+`include "../NPU_module/arithmetic_modules/fpu/sum16.v"
 
 module MAC # (parameter tam = 16)
     (

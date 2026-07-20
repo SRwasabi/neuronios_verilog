@@ -7,7 +7,7 @@ module counter # (parameter weights = 784, parameter layer = 100)
         input mode,
         output reg over,
         output reg over_second,
-        output reg [$clog2(weights):0] count,
+        //output reg [$clog2(weights):0] count,
         output reg [$clog2(weights):0] second_count
     );
 
@@ -16,19 +16,19 @@ module counter # (parameter weights = 784, parameter layer = 100)
 
     always @(posedge clk, posedge rst) begin
         if (rst) begin
-            count <= 0;
+            //count <= 0;
             second_count <= 0;
             over <= 0;
         end
 
 
         else if(!init) begin
-            count <= 0;
+            //count <= 0;
             second_count <= 0;
             over <= 0;
             over_second <= 0;
         end 
-        
+        /*
         else if (mode == WRITING) begin
             over_second <= 0;
             over <= 0;
@@ -43,7 +43,7 @@ module counter # (parameter weights = 784, parameter layer = 100)
             end 
             else count <= count + 1;
         end
-
+        */
         else if (mode == READING) begin
             if(second_count == weights) begin
                 second_count <= 0;

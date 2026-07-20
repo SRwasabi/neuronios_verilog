@@ -1,43 +1,90 @@
 `include "../NPU_module/matrix_PE.v"
+
 `include "../NPU_module/control_modules/counter.v"
 `include "../NPU_module/control_modules/fsm.v"
 `include "../NPU_module/control_modules/mux.v"
-`include "../NPU_module/individual_neurons/activations.v"
-`include "../NPU_module/control_modules/memory.v"
+`include "../NPU_module/control_modules/comparator_out.v"
+
+`include "../NPU_module/memorys_modules/RAM.v"
+`include "../NPU_module/memorys_modules/RAM_OUT.v"
+
+`include "../NPU_module/activations_modules/relu_ativacao.v"
+`include "../NPU_module/activations_modules/linear_ativacao.v"
+
 
 
 //==============================================================================
 
-module Core_NPU #(parameter tam = 16, parameter layer = 2, parameter in_qnt = 2, parameter out_layer = 1) 
+module Core_NPU #(parameter tam = 16, parameter layer = 100, parameter in_qnt = 784, parameter out_layer = 10) 
     (
         input clk,
         input rst,
 
         input [tam-1:0] bus_input,
-        input [tam-1:0] bus_weights,
-        input [tam-1:0] bus_weights_out,
+        //input [tam-1:0] bus_weights,
+        //input [tam-1:0] bus_weights_out,
         
         output [$clog2(in_qnt):0] input_count,
         output [$clog2(layer):0] input_count_out,
         
-        output [$clog2(in_qnt):0] weight_count,
-        output [$clog2(layer):0] weight_count_out,
+        //output [$clog2(in_qnt):0] weight_count,
+        //output [$clog2(layer):0] weight_count_out,
 
         output relu_en,
+		  //output [layer*tam-1:0] debug,
 
-        output reg [tam-1:0] npu_out,
-		
+        output [tam-1:0] npu_out,
+        
+/*
+            output [$clog2(in_qnt):0] addr_wei_debug,
+            output [$clog2(layer):0] addr_wei_out_debug,
+            output ram_wr_debug,
+            output ram_wr_out_debug,
+
+
+            //FSM wires
+
+            output [layer-1:0] PE_en_debug,
+            output [out_layer-1:0] PE_out_en_debug,
+            output init_wire_debug,
+            output init_out_wire_debug,
+            output weight_wr_debug,
+            output weight_out_wr_debug,
+            output over_debug,
+            output over_out_debug,
+            output over_input_debug,
+            output over_input_out_debug,
+            output att_out_debug,
+
+            output buffer_wr_debug,
+            output buffer_out_wr_debug,
+
+
+             // Internal outputs
+
+            output [layer*tam-1:0] acc_out_debug,
+            output [out_layer*tam-1:0] acc_out_2_debug,
+
+             //Mux wires
+            output [tam-1:0] bus_input_out_debug,
+            output [layer*tam-1:0] bus_weights_internal_debug,
+            output [out_layer*tam-1:0] bus_weights_out_internal_debug,
+            output [out_layer*tam-1:0] buffer_weights_out_debug,
+
+				*/
 		output [3:0] current_state
-
+        
     );
+    
+    parameter IDX_TAM = $clog2(out_layer);
 
     // Mem Controls
-    reg [layer*tam-1:0] buffer_weights;
-    reg [out_layer*tam-1:0] buffer_weights_out;
+    //reg [layer*tam-1:0] buffer_weights;
+   // reg [out_layer*tam-1:0] buffer_weights_out;
     reg [$clog2(in_qnt):0] addr_wei;
     reg [$clog2(layer):0] addr_wei_out;
-    reg ram_wr;
-    reg ram_wr_out;
+    //reg ram_wr;
+    //reg ram_wr_out;
 
     //FSM wires
     wire [layer-1:0] PE_en;
@@ -52,8 +99,8 @@ module Core_NPU #(parameter tam = 16, parameter layer = 2, parameter in_qnt = 2,
     wire over_input_out;
     wire att_out;
 
-    reg buffer_wr;
-    reg buffer_out_wr;
+    //reg buffer_wr;
+    //reg buffer_out_wr;
 
     // Internal outputs
     wire [layer*tam-1:0] acc_out;
@@ -61,6 +108,9 @@ module Core_NPU #(parameter tam = 16, parameter layer = 2, parameter in_qnt = 2,
     wire [(layer+1)*tam-1:0] relu_out;
     reg  [tam-1:0] relu_buffer [layer:0];
     wire [out_layer*tam-1:0] linear_out;
+    wire [out_layer*IDX_TAM-1:0]linear_out_idx;
+    reg  [tam-1:0] value_npu_out; 
+    reg 	[$clog2(out_layer)-1:0] max_idx;
 
     //Mux wires
     reg [tam-1:0] bus_input_out;
@@ -72,8 +122,8 @@ module Core_NPU #(parameter tam = 16, parameter layer = 2, parameter in_qnt = 2,
     wire linear_en;
 
     genvar i, j, k;
-    integer idx, w;
-
+    integer idx;
+/*
     always @(posedge clk, posedge rst) begin
         if(rst) buffer_wr <= 0;
         else if (input_count == in_qnt && weight_count == layer-1) buffer_wr <= 0;
@@ -85,8 +135,10 @@ module Core_NPU #(parameter tam = 16, parameter layer = 2, parameter in_qnt = 2,
         else if (input_count_out == layer && weight_count_out == out_layer-1) buffer_out_wr <= 0;
         else buffer_out_wr <= 1;
     end
-
+*/
     // Write weights in RAM
+    
+/*	 
     always @(posedge clk) begin
 		ram_wr <= 0;
         if(weight_wr) begin
@@ -96,61 +148,69 @@ module Core_NPU #(parameter tam = 16, parameter layer = 2, parameter in_qnt = 2,
             ram_wr <= (weight_count == layer-1) ? 1 : 0;
         end
     end
-
-
-	always @(posedge clk) begin
+    
+    
+    always @(posedge clk) begin
         ram_wr_out <= 0;
 		if(weight_out_wr) begin
 			if(buffer_out_wr) begin
 				buffer_weights_out[weight_count_out*tam +: tam] <= bus_weights_out;
 			end
 			ram_wr_out <= (weight_count_out == out_layer-1) ? 1 : 0;
-		end
-	end
-
-    always @(posedge clk) begin
-        for (idx = 0; idx < layer+1; idx = idx + 1) begin
-            relu_buffer[idx] <= relu_out[idx*tam +: tam];
         end
-        bus_input_out <= relu_buffer[addr_wei_out];
-    end
-	
-	always @(posedge clk) begin 
-		addr_wei <= input_count;
-        addr_wei_out <= input_count_out;
 	end
+*/
+    always @(posedge clk) begin
+    /* for (idx = 0; idx < layer+1; idx = idx + 1) begin
+            relu_buffer[idx] <= relu_out[idx*tam +: tam];
+        end*/
+        bus_input_out <= relu_out[addr_wei_out*tam+:tam];
+    end
+    
+    always @(posedge clk) begin 
+        addr_wei <= input_count;
+        addr_wei_out <= input_count_out;
+    end
 
     // Mux for output
+    /*
     always @(posedge clk, posedge rst) begin
         if(rst) npu_out <= 0;
+
         else if(att_out) begin
-            npu_out <= linear_out[0 +: tam];
+            value_npu_out = linear_out[0 +: tam];
+				max_idx = 0;
             for (idx = 1; idx < out_layer; idx = idx + 1) begin
-                if(linear_out[idx*tam +: tam] > npu_out) npu_out <= linear_out[idx*tam +: tam];
+                if((linear_out[idx*tam +: tam] > value_npu_out && linear_out[(idx+1)*tam-1] == 0) ||
+                        (value_npu_out[15] == 1							&& linear_out[(idx+1)*tam-1] == 0) ) begin
+							value_npu_out = linear_out[idx*tam +: tam];
+							max_idx = idx;
+                    end
             end
+				npu_out <= max_idx;
         end
     end
-
+	*/
     RAM # (
         .tam(tam), 
         .layer(layer), 
         .in_qnt(in_qnt)
     ) RAM_weights (
         .clk(clk), 
-        .wr(ram_wr), 
-        .data_in(buffer_weights), 
+        //.wr(ram_wr), 
+        //.data_in(buffer_weights), 
         .addr(addr_wei), 
         .data_out(bus_weights_internal)
     );
 
-    RAM # (
+    RAM_OUT # (
         .tam(tam), 
         .layer(out_layer), 
         .in_qnt(layer)
     ) RAM_weights_out (
         .clk(clk), 
-        .wr(ram_wr_out), 
-        .data_in(buffer_weights_out), 
+        //.wr(ram_wr_out), 
+        //.data_in(buffer_weights_out), 
         .addr(addr_wei_out), 
         .data_out(bus_weights_out_internal)
     );
@@ -165,7 +225,7 @@ module Core_NPU #(parameter tam = 16, parameter layer = 2, parameter in_qnt = 2,
             .rst(rst), 
             .init(init_wire),
             .mode(weight_wr),
-            .count(weight_count),
+            //.count(weight_count),
             .second_count(input_count),
             .over(over),
             .over_second(over_input)
@@ -180,7 +240,7 @@ module Core_NPU #(parameter tam = 16, parameter layer = 2, parameter in_qnt = 2,
             .rst(rst), 
             .init(init_out_wire), 
             .mode(weight_out_wr),
-            .count(weight_count_out),
+            //.count(weight_count_out),
             .second_count(input_count_out),
             .over(over_out),
             .over_second(over_input_out)
@@ -207,7 +267,7 @@ module Core_NPU #(parameter tam = 16, parameter layer = 2, parameter in_qnt = 2,
             .over_input_out(over_input_out),
             .atv_en(relu_en),
             .atv_out_en(linear_en),
-				.current_state(current_state)
+			.current_state(current_state)
         );
 
     matrix_PE # (
@@ -225,7 +285,7 @@ module Core_NPU #(parameter tam = 16, parameter layer = 2, parameter in_qnt = 2,
 
     generate
         for ( i = 0; i < layer; i = i + 1) begin: ativacao
-            ativacao # (
+            relu_ativacao # (
                 .tam(tam)
             ) ativacao_unit (
                 .v(acc_out[i*tam +: tam]), 
@@ -250,7 +310,7 @@ module Core_NPU #(parameter tam = 16, parameter layer = 2, parameter in_qnt = 2,
 
     generate
         for ( j = 0; j < out_layer; j = j + 1) begin: ativacao_out
-            ativacao # (
+            linear_ativacao # (
                 .tam(tam)
             ) ativacao_unit2 (
                 .clk(clk),
@@ -260,7 +320,58 @@ module Core_NPU #(parameter tam = 16, parameter layer = 2, parameter in_qnt = 2,
             );
         end
     endgenerate
-
+    
+    generate
+    for(k = 0; k < out_layer; k = k + 1) begin: idx_wires 
+        assign linear_out_idx[k*IDX_TAM+:IDX_TAM] = k;
+    end
+    endgenerate 
+    
+    
+        comparator_out # (
+                .tam(tam), 
+                .out_layer(out_layer)
+        ) comparator_out_unit (
+                .ins(linear_out),
+                .ins_idx(linear_out_idx),
+                .rst(rst),
+                .att_out(att_out),
+                .out(npu_out)
+        );
+        
+        
     assign relu_out[layer*tam +: tam] = 16'b0011110000000000;
+    //assign debug = bus_weights_internal;
+    
+	 //debugs
+    /*
+    assign addr_wei_debug = addr_wei;
+    assign addr_wei_out_debug = addr_wei_out;
+    assign ram_wr_debug = ram_wr;
+    assign ram_wr_out_debug = ram_wr_out;
 
+    assign PE_en_debug = PE_en;
+    assign PE_out_en_debug = PE_out_en;
+    assign init_wire_debug = init_wire;
+    assign init_out_wire_debug = init_out_wire;
+    assign weight_wr_debug = weight_wr;
+    assign weight_out_wr_debug = weight_out_wr;
+    assign over_debug = over;
+    assign over_out_debug = over_out;
+    assign over_input_debug = over_input;
+    assign over_input_out_debug = over_input_out;
+    assign att_out_debug = att_out;
+
+    assign buffer_wr_debug = buffer_wr;
+    assign buffer_out_wr_debug = buffer_out_wr;
+
+    assign acc_out_debug = acc_out;
+    assign acc_out_2_debug = acc_out_2;
+
+    assign bus_input_out_debug = bus_input_out;
+    assign bus_weights_internal_debug = bus_weights_internal;
+    assign bus_weights_out_internal_debug = bus_weights_out_internal;
+
+    assign buffer_weights_out_debug = buffer_weights_out;
+        */
 endmodule
